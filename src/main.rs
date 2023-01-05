@@ -9,9 +9,9 @@ fn main() {
         program: vec![PushValue(1), PushValue(2), Add, PopOut],
     };
 
-    // let info = CompileInfo { ast };
+    let info = CompileInfo { ast };
 
-    // let res = compile(info).unwrap();
+    let res = compile(info).unwrap();
 
-    // std::fs::write("./output", res.as_slice()).unwrap();
+    std::fs::write("./output", res.as_slice()).unwrap();
 }

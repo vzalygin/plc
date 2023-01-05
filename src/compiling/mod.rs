@@ -4,7 +4,7 @@ use std::error::Error;
 
 use inkwell::{
     context::Context,
-    module::{Linkage, Module}, targets::{Target, InitializationConfig, TargetMachine, FileType}, memory_buffer::MemoryBuffer,
+    module::{Module, Linkage}, targets::{Target, InitializationConfig, TargetMachine, FileType}, memory_buffer::MemoryBuffer,
 };
 
 use crate::parsing::Ast;
@@ -61,6 +61,7 @@ pub fn compile(info: CompileInfo) -> Result<MemoryBuffer, Box<dyn Error>> {
         None => return Err(Box::new(CompileError::Unknown)),
     };
 
-    let buf = target_machine.write_to_memory_buffer(&module, FileType::Object)?;
+    let buf = target_machine.write_to_memory_buffer(&module, FileType::Object)?; 
+
     Ok(buf)
 }

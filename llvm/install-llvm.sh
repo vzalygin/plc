@@ -1,4 +1,4 @@
 #!/bin/bash
 wget https://apt.llvm.org/llvm.sh
 chmod +x llvm.sh
-sudo ./llvm.sh 14 all
+sudo ./llvm.sh 10 all

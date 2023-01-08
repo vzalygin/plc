@@ -1,3 +1,5 @@
+use std::io::{stdout, Write};
+
 use compiling::{compile, CompileInfo};
 use parsing::{Ast, Statement::*};
 

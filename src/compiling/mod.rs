@@ -53,7 +53,7 @@ pub fn compile(info: CompileInfo) -> Result<MemoryBuffer, Box<dyn Error>> {
         &triple, 
         &cpu, 
         &features, 
-        inkwell::OptimizationLevel::Default, 
+        inkwell::OptimizationLevel::None, 
         inkwell::targets::RelocMode::Default, 
         inkwell::targets::CodeModel::Default
     ) {
@@ -61,7 +61,7 @@ pub fn compile(info: CompileInfo) -> Result<MemoryBuffer, Box<dyn Error>> {
         None => return Err(Box::new(CompileError::Unknown)),
     };
 
-    let buf = target_machine.write_to_memory_buffer(&module, FileType::Object)?; 
+    let r = target_machine.write_to_memory_buffer(&module, FileType::Object)?;
 
-    Ok(buf)
+    Ok(r)
 }

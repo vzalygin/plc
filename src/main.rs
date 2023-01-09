@@ -15,5 +15,5 @@ fn main() {
 
     let res = compile(info).unwrap();
 
-    std::fs::write("./output", res.as_slice()).unwrap();
+    std::io::stdout().write_all(res.as_slice()).unwrap();
 }

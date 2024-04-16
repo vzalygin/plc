@@ -1,0 +1,11 @@
+[package]
+name = "app"
+version = "0.1.0"
+edition = "2021"
+authors = [
+    "Vycheslav Zalygin @vzalygin"
+]
+description = "postfix language compiler"
+
+[dependencies]
+lib = { path = "../lib" }

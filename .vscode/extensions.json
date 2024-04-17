@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "nyxiative.rust-and-friends",
-        "taiyuuki.vscode-cargo-scripts"
+        "taiyuuki.vscode-cargo-scripts",
+        "rust-lang.rust-analyzer"
     ]
 }

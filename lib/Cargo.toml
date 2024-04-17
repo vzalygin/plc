@@ -8,3 +8,5 @@ authors = [
 description = "plc project library"
 
 [dependencies]
+anyhow = "1.0.82"
+nom = "7.1.3"

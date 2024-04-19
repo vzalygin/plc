@@ -1,4 +1,5 @@
-pub enum TokenType {
+#[derive(Clone)]
+pub enum Token {
     Int(i32),
     Add,
     Sub,
@@ -6,13 +7,6 @@ pub enum TokenType {
     Div,
 }
 
-pub struct Token {
-    value: TokenType,
-    begin: usize,
-    end: usize,
-}
-
-pub struct Ast<'source> {
-    tokens: Vec<Token>,
-    source: &'source str
+pub struct Ast {
+    pub tokens: Vec<Token>,
 }

@@ -1,36 +1,52 @@
 use anyhow::Result;
 use nom::{
-    bytes::complete::{tag, take_till}, character::{complete::one_of, is_space}, combinator::value, error::{ContextError, ParseError}, multi::{many1, many1_count, many_m_n}, IResult, Parser
+    branch::alt, bytes::complete::{tag, take_till}, character::{complete::one_of, is_space}, combinator::value, error::{ContextError, ParseError, VerboseError}, multi::{many0, many1, many1_count, many_m_n}, IResult, Parser
 };
 
 use crate::common::{Ast, Token};
 
-pub fn parse(source: &str) -> Result<Ast> {
+pub fn parse<'s>(source: &'s str) -> Result<Ast> {
+    let res = token_vec::<VerboseError<&'s str>>(source);
+    // Ok(Ast::from_tokens(tokens))
     todo!()
+}
+
+fn token_vec<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str
+) -> IResult<&'s str, Vec<Token>, E> {
+    many0(token)(inp)
+}
+
+fn token<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str
+) -> IResult<&'s str, Token, E> {
+    alt((
+        add, sub, mul, div, int
+    ))(inp)
 }
 
 fn add<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str
 ) -> IResult<&'s str, Token, E> {
-    value(Token::Add, tag("add")).parse(inp)
+    value(Token::Add, tag("add"))(inp)
 }
 
 fn sub<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str
 ) -> IResult<&'s str, Token, E> {
-    value(Token::Sub, tag("sub")).parse(inp)
+    value(Token::Sub, tag("sub"))(inp)
 }
 
 fn mul<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str
 ) -> IResult<&'s str, Token, E> {
-    value(Token::Mul, tag("mul")).parse(inp)
+    value(Token::Mul, tag("mul"))(inp)
 }
 
 fn div<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str
 ) -> IResult<&'s str, Token, E> {
-    value(Token::Div, tag("div")).parse(inp)
+    value(Token::Div, tag("div"))(inp)
 }
 
 fn int<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
@@ -45,7 +61,7 @@ fn int<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
                 1
             };
             let uinteger = digits
-                .iter()
+                .into_iter()
                 .collect::<String>()
                 .parse::<i32>()
                 .unwrap();

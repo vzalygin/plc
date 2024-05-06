@@ -3,5 +3,5 @@
 resolver = "2"
 members = [
     "lib",
-    "compiler"
+    "app"
 ]

@@ -1,3 +1,5 @@
+
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum Opcode {
     Int(i32),
@@ -5,7 +7,7 @@ pub enum Opcode {
     Sub,
     Mul,
     Div,
-    Print
+    Print,
 }
 
 #[derive(Clone, PartialEq, Debug)]

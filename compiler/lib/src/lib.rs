@@ -1,6 +1,7 @@
 pub mod parser;
 pub mod translator;
 pub mod common;
+pub mod err;
 
 #[cfg(test)]
 mod tests {

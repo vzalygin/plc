@@ -18,7 +18,7 @@ use crate::{
 pub fn parse<'s>(source: &'s str) -> Result<Ast, CompilerError<'s>> {
     let (_, tokens) = match term_list::<VerboseError<&'s str>>(source).finish() {
         Ok(v) => v,
-        Err(e) => return Err(CompilerError::parser_error(source, e).into()),
+        Err(e) => return Err(CompilerError::parser_error(source, e)),
     };
 
     Ok(Ast::from_terms(tokens))

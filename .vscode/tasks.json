@@ -6,7 +6,7 @@
         {
             "label": "clippy",
             "type": "shell",
-            "command": "cargo clippy --fix --allow-dirty --allow-staged --manifest-path ./src/Cargo.toml",
+            "command": "cargo clippy --fix --allow-dirty --allow-staged --manifest-path ./compiler/Cargo.toml",
             "problemMatcher": []
         }
     ]

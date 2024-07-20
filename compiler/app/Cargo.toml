@@ -3,7 +3,7 @@ name = "plc"
 version = "0.1.0"
 edition = "2021"
 authors = [
-    "Vycheslav Zalygin @vzalygin"
+    "Vyacheslav Zalygin @vzalygin"
 ]
 description = "postfix language compiler"
 

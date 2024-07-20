@@ -1,7 +1,7 @@
 
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum Opcode {
+pub enum Term {
     Int(i32),
     Add,
     Sub,
@@ -12,11 +12,11 @@ pub enum Opcode {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Ast {
-    pub codes: Vec<Opcode>,
+    pub terms: Vec<Term>,
 }
 
 impl Ast {
-    pub fn from_tokens(codes: Vec<Opcode>) -> Ast {
-        Ast { codes }
+    pub fn from_terms(terms: Vec<Term>) -> Ast {
+        Ast { terms }
     }
 }

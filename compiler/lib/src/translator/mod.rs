@@ -4,7 +4,7 @@ mod consts;
 
 use asm::Asm;
 use consts::*;
-use stdlib::{STD_PRINT_FUNC_LABEL};
+use stdlib::STD_PRINT_FN_LABEL;
 use x64asm::{indirect_register, macros::*};
 use crate::common::{Ast, Term};
 
@@ -17,8 +17,6 @@ pub fn translate(ast: &Ast) -> Asm {
             asm.append(translate_term(term))
         }
     );
-
-    
 
     asm.append(epilogue())
 }
@@ -84,7 +82,7 @@ fn translate_term(term: &Term) -> Asm {
             i!(Mov, indirect_register!(Rbx), reg!(Eax)),
         ]),
         Term::Print => Asm::from_text([
-            i!(Call, oplabel!(STD_PRINT_FUNC_LABEL)),
+            i!(Call, oplabel!(STD_PRINT_FN_LABEL)),
         ]),
     }
 }

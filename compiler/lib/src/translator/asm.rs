@@ -11,12 +11,24 @@ impl Asm {
         Asm { data: vec![], bss: vec![], text: vec![] }
     }
 
-    pub fn from_instructions(
+    pub fn new(
         data: Vec<Instruction>,
         bss: Vec<Instruction>,
         text: Vec<Instruction>,
     ) -> Asm {
         Asm { data, bss, text }
+    }
+
+    pub fn from_instructions<const T1: usize, const T2: usize, const T3: usize>(
+        data: [Instruction; T1],
+        bss: [Instruction; T2],
+        text: [Instruction; T3],
+    ) -> Asm {
+        Self::new(
+            data.to_vec(), 
+            bss.to_vec(), 
+            text.to_vec()
+        )
     }
 
     pub fn append(self, asm: Asm) -> Asm {
@@ -28,10 +40,10 @@ impl Asm {
         bss.extend(asm.bss);
         text.extend(asm.text);
 
-        Self::from_instructions(data, bss, text)
+        Self::new(data, bss, text)
     }
 
-    pub fn from_text(text: Vec<Instruction>) -> Asm {
-        Self::from_instructions(vec![], vec![], text)
+    pub fn from_text<const L: usize>(text: [Instruction; L]) -> Asm {
+        Self::new(vec![], vec![], text.to_vec())
     }
 }

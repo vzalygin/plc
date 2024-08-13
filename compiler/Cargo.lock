@@ -15,6 +15,7 @@ dependencies = [
  "anyhow",
  "nom",
  "thiserror",
+ "x64asm",
 ]
 
 [[package]]
@@ -100,3 +101,9 @@ name = "unicode-ident"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
+
+[[package]]
+name = "x64asm"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db5d84e84809429b3a33e2828c3b4da834a43aa6a9c4f7146984652442c412b3"

@@ -1,5 +1,3 @@
-
-
 #[derive(Clone, PartialEq, Debug)]
 pub enum Term {
     Int(i32),

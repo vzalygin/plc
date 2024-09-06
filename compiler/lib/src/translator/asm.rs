@@ -1,4 +1,4 @@
-use x64asm::Instruction;
+use x64asm::{convert::{Separator, ToAssembly}, Instruction};
 
 pub struct Asm {
     pub data: Vec<Instruction>,
@@ -45,5 +45,13 @@ impl Asm {
 
     pub fn from_text<const L: usize>(text: [Instruction; L]) -> Asm {
         Self::new(vec![], vec![], text.to_vec())
+    }
+
+    pub fn into_assembly(self) -> String {
+        self.data.into_iter().chain(
+            self.bss
+        ).chain(
+            self.text
+        ).collect::<Vec<Instruction>>().to_assembly(Separator::Space)
     }
 }

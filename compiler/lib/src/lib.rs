@@ -16,7 +16,11 @@ pub use {
         make_object_file, 
         link_to_executable,
     },
-    common::*,
+    common::{
+        Ast, 
+        Term
+    },
+    err::CompilerError,
 };
 
 #[cfg(test)]

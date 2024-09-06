@@ -5,7 +5,7 @@ use crate::translator::Asm;
 
 const TMP_SUBDIR: &str = "plc";
 
-pub fn link_to_executable(
+pub fn link_to_executable_file(
     object_files_paths: Vec<PathBuf>,
     output_path: PathBuf
 ) -> Result<PathBuf> {
@@ -71,7 +71,7 @@ pub fn make_object_file(
     Ok(output_path)
 }
 
-pub fn make_asm(
+pub fn make_asm_file(
     asm: Asm,
     output: PathBuf,
 ) -> Result<PathBuf> {
@@ -84,12 +84,12 @@ pub fn make_asm(
     Ok(output)
 }
 
-pub fn make_tmp_asm(
+pub fn make_tmp_asm_file(
     asm: Asm,
 ) -> Result<PathBuf> {
     let output = env::temp_dir()
         .join(TMP_SUBDIR)
         .join(uuid::Uuid::new_v4().to_string());
 
-    make_asm(asm, output)
+    make_asm_file(asm, output)
 }

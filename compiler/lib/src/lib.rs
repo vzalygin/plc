@@ -11,14 +11,14 @@ pub use {
         make_std_lib,
     },
     builder::{
-        make_asm, 
-        make_tmp_asm, 
-        make_object_file, 
-        link_to_executable,
+        make_asm_file,
+        make_tmp_asm_file,
+        make_object_file,
+        link_to_executable_file,
     },
     common::{
-        Ast, 
-        Term
+        Ast,
+        Term,
     },
     err::CompilerError,
 };

@@ -1,10 +1,16 @@
-pub mod asm;
+mod asm;
 mod stdlib;
 mod consts;
 
-use asm::Asm;
+pub use {
+    asm::Asm,
+    stdlib::{
+        make_std_lib,
+        STD_PRINT_FN_LABEL,
+    },
+};
+
 use consts::*;
-use stdlib::STD_PRINT_FN_LABEL;
 use x64asm::{indirect_register, macros::*};
 use crate::common::{Ast, Term};
 

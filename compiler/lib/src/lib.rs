@@ -1,7 +1,23 @@
-pub mod parser;
-pub mod translator;
-pub mod common;
-pub mod err;
+mod parser;
+mod translator;
+mod builder;
+mod common;
+mod err;
+
+pub use {
+    parser::parse,
+    translator::{
+        translate,
+        make_std_lib,
+    },
+    builder::{
+        make_asm, 
+        make_tmp_asm, 
+        make_object_file, 
+        link_to_executable,
+    },
+    common::*,
+};
 
 #[cfg(test)]
 mod tests {

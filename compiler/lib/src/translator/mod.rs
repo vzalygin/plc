@@ -78,7 +78,7 @@ fn translate_term(term: &Term) -> Asm {
             i!(Xor, reg!(Rax), reg!(Rax)),
             i!(Mov, reg!(Eax), indirect_register!(Ebx)),
             i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
-            i!(Mul, OP_SIZE, indirect_register!(Ebx)),
+            i!(Mul, opexpr!(format!("dword[ebx]"))),
             i!(Mov, indirect_register!(Ebx), reg!(Eax)),
         ]),
         Term::Div => Asm::from_text([

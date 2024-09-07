@@ -54,6 +54,7 @@ pub fn make_object_file<'a>(
 
         let nasm_exit_status = Command::new("nasm")
             .args(["-f", "elf64"])
+            .arg("-w-orphan-labels") // TODO: set only in release mode
             .args(["-o", output_path])
             .arg(asm_file_path)
             .status()?;

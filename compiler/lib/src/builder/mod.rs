@@ -1,14 +1,14 @@
-use std::{env, fs::File, io::Write, path::PathBuf, process::Command};
+use std::{env, fs::File, io::Write, path::{Path, PathBuf}, process::Command};
 use anyhow::{anyhow, Result};
 
 use crate::translator::Asm;
 
 const TMP_SUBDIR: &str = "plc";
 
-pub fn link_to_executable_file(
-    object_files_paths: Vec<PathBuf>,
-    output_path: PathBuf
-) -> Result<PathBuf> {
+pub fn link_to_executable_file<'a>(
+    object_files_paths: &'a [&Path],
+    output_path: &'a Path,
+) -> Result<&'a Path> {
     {
         let output_path = output_path.to_str()
             .ok_or(anyhow!("path contains non-utf8 characters"))?;
@@ -42,10 +42,10 @@ pub fn link_to_executable_file(
     Ok(output_path)
 }
 
-pub fn make_object_file(
-    asm_file_path: PathBuf,
-    output_path: PathBuf,
-) -> Result<PathBuf> {
+pub fn make_object_file<'a>(
+    asm_file_path: &'a Path,
+    output_path: &'a Path,
+) -> Result<&'a Path> {
     {
         let output_path = output_path.to_str()
             .ok_or(anyhow!("path contains non-utf8 characters"))?;
@@ -73,23 +73,23 @@ pub fn make_object_file(
 
 pub fn make_asm_file(
     asm: Asm,
-    output: PathBuf,
-) -> Result<PathBuf> {
+    output: &Path,
+) -> Result<&Path> {
     let code = asm.into_assembly();
 
-    let mut file = File::create(&output)?;
+    let mut file = File::create(output)?;
 
     let _ = file.write(code.as_bytes())?;
 
     Ok(output)
 }
 
-pub fn make_tmp_asm_file(
-    asm: Asm,
-) -> Result<PathBuf> {
-    let output = env::temp_dir()
+pub fn make_tmp_path() -> PathBuf {
+    env::temp_dir()
         .join(TMP_SUBDIR)
-        .join(uuid::Uuid::new_v4().to_string());
+        .join(uuid::Uuid::new_v4().to_string())
+}
 
-    make_asm_file(asm, output)
+pub fn check_tmp_dir() -> Result<()> {
+    std::fs::create_dir_all(env::temp_dir().join(TMP_SUBDIR)).map_err(|e| { e.into() })
 }

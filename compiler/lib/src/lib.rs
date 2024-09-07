@@ -12,9 +12,10 @@ pub use {
     },
     builder::{
         make_asm_file,
-        make_tmp_asm_file,
         make_object_file,
         link_to_executable_file,
+        make_tmp_path,
+        check_tmp_dir,
     },
     common::{
         Ast,

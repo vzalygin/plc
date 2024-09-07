@@ -30,17 +30,21 @@ pub fn translate(ast: &Ast) -> Asm {
 fn prelude() -> Asm {
     let data = [
         i!(section!(Data)),
-        i!(label!(OP_STACK_LABEL), dd!(Db), Op::Literal(OP_STACK_SIZE)),
-        i!(label!(OP_STACK_BASE_LABEL), dd!(Equ), opexpr!(format!("$ - {OP_STACK_LABEL}")))
     ];
     let bss = [
         i!(section!(Bss)),
+        i!(label!(OP_STACK_LABEL), opexpr!(format!("resb {OP_STACK_SIZE}"))),
+        i!(label!(OP_STACK_BASE_LABEL), opexpr!(format!("resd 1"))),
     ];
     let text = [
+        i!(Extern, oplabel!(STD_PRINT_FN_LABEL.to_string())),
+
         i!(section!(Text)),
         i!(Global, oplabel!(START_LABEL)),
         i!(label!(START_LABEL)),
-        i!(Mov, reg!(Rbx), oplabel!(OP_STACK_BASE_LABEL)),
+        i!(Mov, reg!(Ebx), oplabel!(OP_STACK_LABEL)),
+        i!(Add, reg!(Ebx), Op::Literal(OP_STACK_SIZE)),
+        i!(Mov, opexpr!(format!("[{OP_STACK_BASE_LABEL}]")), reg!(Ebx)),
     ];
 
     Asm::from_instructions(data, bss, text)
@@ -57,35 +61,35 @@ fn epilogue() -> Asm {
 fn translate_term(term: &Term) -> Asm {
     match term {
         Term::Int(number) => Asm::from_text([
-            i!(Sub, reg!(Rbx), Op::Literal(OP_SIZE_BYTES)),
-            i!(Mov, OP_SIZE, indirect_register!(Rbx), Op::Literal(*number as i64)),
+            i!(Sub, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Mov, indirect_register!(Ebx), OP_SIZE, Op::Literal(*number as i64)),
         ]),
         Term::Add => Asm::from_text([
-            i!(Mov, reg!(Eax), indirect_register!(Rbx)),
-            i!(Add, reg!(Rbx), Op::Literal(OP_SIZE_BYTES)),
-            i!(Add, indirect_register!(Rbx), reg!(Eax)),
+            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
+            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Add, indirect_register!(Ebx), reg!(Eax)),
         ]),
         Term::Sub => Asm::from_text([
-            i!(Mov, reg!(Eax), indirect_register!(Rbx)),
-            i!(Add, reg!(Rbx), Op::Literal(OP_SIZE_BYTES)),
-            i!(Sub, indirect_register!(Rbx), reg!(Eax)),
+            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
+            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Sub, indirect_register!(Ebx), reg!(Eax)),
         ]),
         Term::Mul => Asm::from_text([
             i!(Xor, reg!(Rax), reg!(Rax)),
-            i!(Mov, reg!(Eax), indirect_register!(Rbx)),
-            i!(Add, reg!(Rbx), Op::Literal(OP_SIZE_BYTES)),
-            i!(Mul, OP_SIZE, indirect_register!(Rbx)),
-            i!(Mov, indirect_register!(Rbx), reg!(Eax)),
+            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
+            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Mul, OP_SIZE, indirect_register!(Ebx)),
+            i!(Mov, indirect_register!(Ebx), reg!(Eax)),
         ]),
         Term::Div => Asm::from_text([
-            i!(Mov, reg!(Edi), indirect_register!(Rbx)),
-            i!(Add, reg!(Rbx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Mov, reg!(Edi), indirect_register!(Ebx)),
+            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
             i!(Xor, reg!(Rax), reg!(Rax)),
-            i!(Mov, reg!(Eax), indirect_register!(Rbx)),
+            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
             i!(Cltq),
             i!(Cqto),
             i!(Div, reg!(Edi)),
-            i!(Mov, indirect_register!(Rbx), reg!(Eax)),
+            i!(Mov, indirect_register!(Ebx), reg!(Eax)),
         ]),
         Term::Print => Asm::from_text([
             i!(Call, oplabel!(STD_PRINT_FN_LABEL)),

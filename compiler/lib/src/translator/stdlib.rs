@@ -1,33 +1,42 @@
-use x64asm::{macros::*, i, instruction::Section::{Bss, Text}, section};
+use x64asm::{i, indirect_register, instruction::Section::{Bss, Text}, macros::*, section};
 
 use super::{asm::Asm, OP_SIZE_BYTES};
 
 pub const STD_PRINT_FN_LABEL: &str = "$std_print";
 
 const OUTPUT_TEMPLATE_LABEL: &str = "$otemplate";
-const OUTPUT_TEMPLATE_STR: &str = "`%d\n\0`";
+const OUTPUT_TEMPLATE_STR: &str = "%d";
 
 const LIBC_PRINTF_LABEL: &str = "printf";
 
 pub fn make_std_lib() -> Asm {
     let data = [
         i!(section!(Rodata)),
-        i!(label!(OUTPUT_TEMPLATE_LABEL), dd!(Db), Op::String(OUTPUT_TEMPLATE_STR.to_string()))
+        i!(label!(OUTPUT_TEMPLATE_LABEL), dd!(Db), opstring!(OUTPUT_TEMPLATE_STR.to_string()), Op::Literal(10), Op::Literal(0))
     ];
     let bss = [
         i!(section!(Bss)),
     ];
     let text = [
-        i!(Global, Op::String(STD_PRINT_FN_LABEL.to_string())),
+        i!(Global, oplabel!(STD_PRINT_FN_LABEL.to_string())),
 
-        i!(Extern, Op::String(LIBC_PRINTF_LABEL.to_string())),
+        i!(Extern, oplabel!(LIBC_PRINTF_LABEL.to_string())),
 
         i!(section!(Text)),
         
         i!(label!(STD_PRINT_FN_LABEL)),
-        i!(Mov, Op::Register(Rdi), Op::String(OUTPUT_TEMPLATE_LABEL.to_string())),
-        i!(Call, Op::String(LIBC_PRINTF_LABEL.to_string())),
-        i!(Add, reg!(Rbx), Op::Literal(OP_SIZE_BYTES)),
+        i!(Push, reg!(Rbp)),
+        i!(Mov, reg!(Rbp), reg!(Rsp)),
+
+        i!(And, reg!(Rsp), Op::Literal(-16)),
+        i!(Mov, reg!(Rdi), oplabel!(OUTPUT_TEMPLATE_LABEL.to_string())),
+        i!(Xor, reg!(Rsi), reg!(Rsi)),
+        i!(Mov, reg!(Esi), indirect_register!(Ebx)),
+        i!(Call, oplabel!(LIBC_PRINTF_LABEL.to_string())),
+        i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+        
+        i!(Mov, reg!(Rsp), reg!(Rbp)),
+        i!(Pop, reg!(Rbp)),
         i!(Ret)
     ];
 

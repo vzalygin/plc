@@ -86,6 +86,7 @@ fn translate_term(term: &Term) -> Asm {
             i!(Mov, reg!(Edi), indirect_register!(Ebx)),
             i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
             i!(Xor, reg!(Rax), reg!(Rax)),
+            i!(Xor, reg!(Rdx), reg!(Rdx)),
             i!(Mov, reg!(Eax), indirect_register!(Ebx)),
             i!(Cltq),
             i!(Cqto),

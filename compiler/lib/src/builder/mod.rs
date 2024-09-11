@@ -1,5 +1,11 @@
-use std::{env, fs::File, io::Write, path::{Path, PathBuf}, process::Command};
 use anyhow::{anyhow, Result};
+use std::{
+    env,
+    fs::File,
+    io::Write,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use crate::translator::Asm;
 
@@ -10,9 +16,10 @@ pub fn link_to_executable_file<'a>(
     output_path: &'a Path,
 ) -> Result<&'a Path> {
     {
-        let output_path = output_path.to_str()
+        let output_path = output_path
+            .to_str()
             .ok_or(anyhow!("path contains non-utf8 characters"))?;
-    
+
         let mut ld_command = Command::new("ld");
         let mut ld_command = ld_command
             .args(["-dynamic-linker", "/lib64/ld-linux-x86-64.so.2"])
@@ -23,7 +30,7 @@ pub fn link_to_executable_file<'a>(
             ld_command = ld_command.arg(
                 object_files_path
                     .to_str()
-                    .ok_or(anyhow!("path contains non-utf8 characters"))?
+                    .ok_or(anyhow!("path contains non-utf8 characters"))?,
             )
         }
 
@@ -42,14 +49,13 @@ pub fn link_to_executable_file<'a>(
     Ok(output_path)
 }
 
-pub fn make_object_file<'a>(
-    asm_file_path: &'a Path,
-    output_path: &'a Path,
-) -> Result<&'a Path> {
+pub fn make_object_file<'a>(asm_file_path: &'a Path, output_path: &'a Path) -> Result<&'a Path> {
     {
-        let output_path = output_path.to_str()
+        let output_path = output_path
+            .to_str()
             .ok_or(anyhow!("path contains non-utf8 characters"))?;
-        let asm_file_path = asm_file_path.to_str()
+        let asm_file_path = asm_file_path
+            .to_str()
             .ok_or(anyhow!("path contains non-utf8 characters"))?;
 
         let nasm_exit_status = Command::new("nasm")
@@ -72,10 +78,7 @@ pub fn make_object_file<'a>(
     Ok(output_path)
 }
 
-pub fn make_asm_file(
-    asm: Asm,
-    output: &Path,
-) -> Result<&Path> {
+pub fn make_asm_file(asm: Asm, output: &Path) -> Result<&Path> {
     let code = asm.into_assembly();
 
     let mut file = File::create(output)?;
@@ -92,5 +95,5 @@ pub fn make_tmp_path() -> PathBuf {
 }
 
 pub fn check_tmp_dir() -> Result<()> {
-    std::fs::create_dir_all(env::temp_dir().join(TMP_SUBDIR)).map_err(|e| { e.into() })
+    std::fs::create_dir_all(env::temp_dir().join(TMP_SUBDIR)).map_err(|e| e.into())
 }

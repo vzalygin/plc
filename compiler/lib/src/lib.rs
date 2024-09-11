@@ -1,34 +1,24 @@
-mod parser;
-mod translator;
 mod builder;
 mod common;
 mod err;
+mod parser;
+mod translator;
 
 pub use {
-    parser::parse,
-    translator::{
-        translate,
-        make_std_lib,
-    },
     builder::{
-        make_asm_file,
-        make_object_file,
-        link_to_executable_file,
-        make_tmp_path,
-        check_tmp_dir,
+        check_tmp_dir, link_to_executable_file, make_asm_file, make_object_file, make_tmp_path,
     },
-    common::{
-        Ast,
-        Term,
-    },
+    common::{Ast, Term},
     err::CompilerError,
+    parser::parse,
+    translator::{make_std_lib, translate},
 };
 
 #[cfg(test)]
 mod tests {
     #[test]
     fn it_works() {
-        let result = 2+2;
+        let result = 2 + 2;
         assert_eq!(result, 4);
     }
 }

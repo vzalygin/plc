@@ -1,46 +1,41 @@
 mod asm;
-mod stdlib;
 mod consts;
+mod stdlib;
 
 pub use {
     asm::Asm,
-    stdlib::{
-        make_std_lib,
-        STD_PRINT_FN_LABEL,
-    },
+    stdlib::{make_std_lib, STD_PRINT_FN_LABEL},
 };
 
+use crate::common::{Ast, Term};
 use consts::*;
 use stdlib::STD_EXIT_FN_LABEL;
 use x64asm::{indirect_register, macros::*};
-use crate::common::{Ast, Term};
 
 pub fn translate(ast: &Ast) -> Asm {
     let asm = prelude();
 
-    let asm = ast.terms
+    let asm = ast
+        .terms
         .iter()
-        .fold(asm, |asm, term| {
-            asm.append(translate_term(term))
-        }
-    );
+        .fold(asm, |asm, term| asm.append(translate_term(term)));
 
     asm.append(epilogue())
 }
 
 fn prelude() -> Asm {
-    let data = [
-        i!(section!(Data)),
-    ];
+    let data = [i!(section!(Data))];
     let bss = [
         i!(section!(Bss)),
-        i!(label!(OP_STACK_LABEL), opexpr!(format!("resb {OP_STACK_SIZE}"))),
+        i!(
+            label!(OP_STACK_LABEL),
+            opexpr!(format!("resb {OP_STACK_SIZE}"))
+        ),
         i!(label!(OP_STACK_BASE_LABEL), opexpr!(format!("resd 1"))),
     ];
     let text = [
         i!(Extern, oplabel!(STD_PRINT_FN_LABEL.to_string())),
         i!(Extern, oplabel!(STD_EXIT_FN_LABEL.to_string())),
-
         i!(section!(Text)),
         i!(Global, oplabel!(START_LABEL)),
         i!(label!(START_LABEL)),
@@ -63,7 +58,12 @@ fn translate_term(term: &Term) -> Asm {
     match term {
         Term::Int(number) => Asm::from_text([
             i!(Sub, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
-            i!(Mov, indirect_register!(Ebx), OP_SIZE, Op::Literal(*number as i64)),
+            i!(
+                Mov,
+                indirect_register!(Ebx),
+                OP_SIZE,
+                Op::Literal(*number as i64)
+            ),
         ]),
         Term::Add => Asm::from_text([
             i!(Mov, reg!(Eax), indirect_register!(Ebx)),
@@ -93,8 +93,6 @@ fn translate_term(term: &Term) -> Asm {
             i!(Div, reg!(Edi)),
             i!(Mov, indirect_register!(Ebx), reg!(Eax)),
         ]),
-        Term::Print => Asm::from_text([
-            i!(Call, oplabel!(STD_PRINT_FN_LABEL)),
-        ]),
+        Term::Print => Asm::from_text([i!(Call, oplabel!(STD_PRINT_FN_LABEL))]),
     }
 }

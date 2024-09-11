@@ -4,8 +4,14 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "clippy",
+            "label": "fmt",
             "type": "shell",
+            "command": "cd compiler && cargo fmt",
+            "problemMatcher": []
+        },
+        {
+            "label": "clippy",
+            "type": "shell",q
             "command": "cargo clippy --fix --allow-dirty --allow-staged --manifest-path ./compiler/Cargo.toml",
             "problemMatcher": []
         }

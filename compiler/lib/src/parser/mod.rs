@@ -30,11 +30,8 @@ fn term_list<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     terminated(
         delimited(
             many0(separator),
-            separated_list0(
-                many1(separator), 
-                alt((int, add, sub, mul, div, print))
-            ),
-            many0(separator)
+            separated_list0(many1(separator), alt((int, add, sub, mul, div, print))),
+            many0(separator),
         ),
         eof,
     )
@@ -50,17 +47,15 @@ fn separator<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
 fn space_char<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str,
 ) -> IResult<&'s str, (), E> {
-    one_of(" \n\t\r")
-        .map(|_| {  })
-        .parse(inp)
+    one_of(" \n\t\r").map(|_| {}).parse(inp)
 }
 
 fn comment<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str,
 ) -> IResult<&'s str, (), E> {
     tag("#")
-        .and(take_while(|x| { x != '\n' && x != '\0' }))
-        .map(|_| {  })
+        .and(take_while(|x| x != '\n' && x != '\0'))
+        .map(|_| {})
         .parse(inp)
 }
 
@@ -126,9 +121,7 @@ mod tests {
     #[test]
     fn empty() {
         let source = "";
-        let exp = Ast {
-            terms: vec![],
-        };
+        let exp = Ast { terms: vec![] };
         let act = parse(source);
         assert!(act.is_ok());
         let act = act.unwrap();
@@ -233,8 +226,7 @@ mod tests {
 
     #[test]
     fn multiline_code() {
-        let source = 
-            "1\n
+        let source = "1\n
             60";
         let exp = Ast {
             terms: vec![Term::Int(1), Term::Int(60)],
@@ -248,9 +240,7 @@ mod tests {
     #[test]
     fn only_comment() {
         let source = "# a comment";
-        let exp = Ast {
-            terms: vec![],
-        };
+        let exp = Ast { terms: vec![] };
         let act = parse(source);
         assert!(act.is_ok());
         let act = act.unwrap();
@@ -271,8 +261,7 @@ mod tests {
 
     #[test]
     fn comment_before_op() {
-        let source = 
-            "# a comment
+        let source = "# a comment
             1";
         let exp = Ast {
             terms: vec![Term::Int(1)],
@@ -285,8 +274,7 @@ mod tests {
 
     #[test]
     fn comment_between_op() {
-        let source = 
-            "2 # a comment
+        let source = "2 # a comment
             1";
         let exp = Ast {
             terms: vec![Term::Int(2), Term::Int(1)],

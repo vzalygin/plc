@@ -1,4 +1,7 @@
-use x64asm::{convert::{Separator, ToAssembly}, Instruction};
+use x64asm::{
+    convert::{Separator, ToAssembly},
+    Instruction,
+};
 
 pub struct Asm {
     pub data: Vec<Instruction>,
@@ -8,14 +11,14 @@ pub struct Asm {
 
 impl Asm {
     pub fn empty() -> Asm {
-        Asm { data: vec![], bss: vec![], text: vec![] }
+        Asm {
+            data: vec![],
+            bss: vec![],
+            text: vec![],
+        }
     }
 
-    pub fn new(
-        data: Vec<Instruction>,
-        bss: Vec<Instruction>,
-        text: Vec<Instruction>,
-    ) -> Asm {
+    pub fn new(data: Vec<Instruction>, bss: Vec<Instruction>, text: Vec<Instruction>) -> Asm {
         Asm { data, bss, text }
     }
 
@@ -24,11 +27,7 @@ impl Asm {
         bss: [Instruction; T2],
         text: [Instruction; T3],
     ) -> Asm {
-        Self::new(
-            data.to_vec(), 
-            bss.to_vec(), 
-            text.to_vec()
-        )
+        Self::new(data.to_vec(), bss.to_vec(), text.to_vec())
     }
 
     pub fn append(self, asm: Asm) -> Asm {
@@ -48,10 +47,11 @@ impl Asm {
     }
 
     pub fn into_assembly(self) -> String {
-        self.data.into_iter().chain(
-            self.bss
-        ).chain(
-            self.text
-        ).collect::<Vec<Instruction>>().to_assembly(Separator::Space)
+        self.data
+            .into_iter()
+            .chain(self.bss)
+            .chain(self.text)
+            .collect::<Vec<Instruction>>()
+            .to_assembly(Separator::Space)
     }
 }

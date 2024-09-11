@@ -1,12 +1,12 @@
 use anyhow::Result;
 use nom::{
     branch::alt,
-    bytes::complete::tag,
-    character::complete::{multispace1, one_of},
+    bytes::complete::{tag, take_while},
+    character::complete::one_of,
     combinator::{eof, value},
     error::{ContextError, ParseError, VerboseError},
-    multi::{many1, many_m_n, separated_list0},
-    sequence::terminated,
+    multi::{many0, many1, many_m_n, separated_list0},
+    sequence::{delimited, terminated},
     Finish, IResult, Parser,
 };
 
@@ -28,10 +28,40 @@ fn term_list<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str,
 ) -> IResult<&'s str, Vec<Term>, E> {
     terminated(
-        separated_list0(multispace1, alt((int, add, sub, mul, div, print))),
+        delimited(
+            many0(separator),
+            separated_list0(
+                many1(separator), 
+                alt((int, add, sub, mul, div, print))
+            ),
+            many0(separator)
+        ),
         eof,
     )
     .parse(inp)
+}
+
+fn separator<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, (), E> {
+    alt((space_char, comment)).parse(inp)
+}
+
+fn space_char<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, (), E> {
+    one_of(" \n\t\r")
+        .map(|_| {  })
+        .parse(inp)
+}
+
+fn comment<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, (), E> {
+    tag("#")
+        .and(take_while(|x| { x != '\n' && x != '\0' }))
+        .map(|_| {  })
+        .parse(inp)
 }
 
 fn add<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
@@ -94,7 +124,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_positive_int() {
+    fn empty() {
+        let source = "";
+        let exp = Ast {
+            terms: vec![],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn positive_int() {
         let source = "42";
         let exp = Ast {
             terms: vec![Term::Int(42)],
@@ -106,7 +148,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_negative_int() {
+    fn negative_int() {
         let source = "-42";
         let exp = Ast {
             terms: vec![Term::Int(-42)],
@@ -118,7 +160,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_add() {
+    fn add() {
         let source = "+";
         let exp = Ast {
             terms: vec![Term::Add],
@@ -130,7 +172,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_mul() {
+    fn mul() {
         let source = "*";
         let exp = Ast {
             terms: vec![Term::Mul],
@@ -142,7 +184,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_sub() {
+    fn sub() {
         let source = "-";
         let exp = Ast {
             terms: vec![Term::Sub],
@@ -154,7 +196,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_div() {
+    fn div() {
         let source = "/";
         let exp = Ast {
             terms: vec![Term::Div],
@@ -166,7 +208,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_print() {
+    fn print() {
         let source = ".";
         let exp = Ast {
             terms: vec![Term::Print],
@@ -178,11 +220,10 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    fn correct_opcode_seq_1() {
-        let source = "-42-";
+    fn newline_at_the_end() {
+        let source = "1\n";
         let exp = Ast {
-            terms: vec![Term::Int(-42), Term::Sub],
+            terms: vec![Term::Int(1)],
         };
         let act = parse(source);
         assert!(act.is_ok());
@@ -191,11 +232,12 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    fn correct_opcode_seq_2() {
-        let source = "-+42";
+    fn multiline_code() {
+        let source = 
+            "1\n
+            60";
         let exp = Ast {
-            terms: vec![Term::Sub, Term::Int(42)],
+            terms: vec![Term::Int(1), Term::Int(60)],
         };
         let act = parse(source);
         assert!(act.is_ok());
@@ -204,11 +246,50 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    fn correct_opcode_seq_3() {
-        let source = "42.0";
+    fn only_comment() {
+        let source = "# a comment";
         let exp = Ast {
-            terms: vec![Term::Int(42), Term::Print, Term::Int(0)],
+            terms: vec![],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn comment_after_op() {
+        let source = "1 # a comment";
+        let exp = Ast {
+            terms: vec![Term::Int(1)],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn comment_before_op() {
+        let source = 
+            "# a comment
+            1";
+        let exp = Ast {
+            terms: vec![Term::Int(1)],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn comment_between_op() {
+        let source = 
+            "2 # a comment
+            1";
+        let exp = Ast {
+            terms: vec![Term::Int(2), Term::Int(1)],
         };
         let act = parse(source);
         assert!(act.is_ok());

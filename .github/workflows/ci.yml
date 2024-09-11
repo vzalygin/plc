@@ -1,4 +1,4 @@
-name: Rust
+name: CI
 
 on:
   push:
@@ -16,11 +16,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Setup toolchain
+      run: rustup toolchain install stable --profile minimal
+
+    - uses: Swatinem/rust-cache@v2
+
     - name: Lint
       run: cargo fmt --check --all $SPECIFIC_COMPILER_MANIFEST
+    
     - name: Codestyle
       run: cargo clippy $SPECIFIC_COMPILER_MANIFEST
+    
     - name: Build
       run: cargo build --verbose $SPECIFIC_COMPILER_MANIFEST
+  
     - name: Run unit tests
       run: cargo test --verbose $SPECIFIC_COMPILER_MANIFEST

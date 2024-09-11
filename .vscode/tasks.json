@@ -6,12 +6,12 @@
         {
             "label": "fmt",
             "type": "shell",
-            "command": "cd compiler && cargo fmt",
+            "command": "cargo fmt --all --manifest-path ./compiler/Cargo.toml",
             "problemMatcher": []
         },
         {
             "label": "clippy",
-            "type": "shell",q
+            "type": "shell",
             "command": "cargo clippy --fix --allow-dirty --allow-staged --manifest-path ./compiler/Cargo.toml",
             "problemMatcher": []
         }

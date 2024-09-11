@@ -3,11 +3,13 @@ use x64asm::{i, indirect_register, instruction::Section::{Bss, Text}, macros::*,
 use super::{asm::Asm, OP_SIZE_BYTES};
 
 pub const STD_PRINT_FN_LABEL: &str = "$std_print";
+pub const STD_EXIT_FN_LABEL: &str = "$str_exit";
 
 const OUTPUT_TEMPLATE_LABEL: &str = "$otemplate";
 const OUTPUT_TEMPLATE_STR: &str = "%d";
 
 const LIBC_PRINTF_LABEL: &str = "printf";
+const LIBC_EXIT_LABEL: &str = "exit";
 
 pub fn make_std_lib() -> Asm {
     let data = [
@@ -19,8 +21,10 @@ pub fn make_std_lib() -> Asm {
     ];
     let text = [
         i!(Global, oplabel!(STD_PRINT_FN_LABEL.to_string())),
+        i!(Global, oplabel!(STD_EXIT_FN_LABEL.to_string())),
 
         i!(Extern, oplabel!(LIBC_PRINTF_LABEL.to_string())),
+        i!(Extern, oplabel!(LIBC_EXIT_LABEL.to_string())),
 
         i!(section!(Text)),
         
@@ -37,7 +41,11 @@ pub fn make_std_lib() -> Asm {
         
         i!(Mov, reg!(Rsp), reg!(Rbp)),
         i!(Pop, reg!(Rbp)),
-        i!(Ret)
+        i!(Ret),
+
+        i!(label!(STD_EXIT_FN_LABEL)),
+        i!(And, reg!(Rsp), Op::Literal(-16)),
+        i!(Call, oplabel!(LIBC_EXIT_LABEL.to_string())),
     ];
 
     Asm::from_instructions(data, bss, text)

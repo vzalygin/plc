@@ -11,6 +11,7 @@ pub use {
 };
 
 use consts::*;
+use stdlib::STD_EXIT_FN_LABEL;
 use x64asm::{indirect_register, macros::*};
 use crate::common::{Ast, Term};
 
@@ -38,6 +39,7 @@ fn prelude() -> Asm {
     ];
     let text = [
         i!(Extern, oplabel!(STD_PRINT_FN_LABEL.to_string())),
+        i!(Extern, oplabel!(STD_EXIT_FN_LABEL.to_string())),
 
         i!(section!(Text)),
         i!(Global, oplabel!(START_LABEL)),
@@ -52,9 +54,8 @@ fn prelude() -> Asm {
 
 fn epilogue() -> Asm {
     Asm::from_text([
-        i!(Mov, reg!(Rdx), Op::Literal(0)), // success exit code
-        i!(Mov, reg!(Rax), Op::Literal(60)), // exit call
-        i!(Syscall),
+        i!(Mov, reg!(Rdi), Op::Literal(0)),
+        i!(Call, oplabel!(STD_EXIT_FN_LABEL.to_string())),
     ])
 }
 

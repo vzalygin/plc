@@ -38,4 +38,4 @@ plc -h
 
 ## Примеры
 
-Доступные в папке [examples](./examples)
+Доступны в папке [examples](./examples)

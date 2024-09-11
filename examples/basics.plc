@@ -1,0 +1,4 @@
+1 # push a number to stack
+2 # push another number to stack
++ # add the numbers
+. # print result

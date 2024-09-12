@@ -26,8 +26,8 @@ pub fn translate(ast: &Ast) -> Asm {
 }
 
 fn prelude() -> Asm {
-    let data = [i!(section!(Data))];
-    let bss = [
+    let rodata = vec![i!(section!(Rodata))];
+    let bss = vec![
         i!(section!(Bss)),
         i!(
             label!(OP_STACK_LABEL),
@@ -35,7 +35,7 @@ fn prelude() -> Asm {
         ),
         i!(label!(OP_STACK_BASE_LABEL), opexpr!(format!("resd 1"))),
     ];
-    let text = [
+    let text = vec![
         i!(Extern, oplabel!(STD_PRINT_FN_LABEL.to_string())),
         i!(Extern, oplabel!(STD_EXIT_FN_LABEL.to_string())),
         i!(section!(Text)),
@@ -46,11 +46,11 @@ fn prelude() -> Asm {
         i!(Mov, opexpr!(format!("[{OP_STACK_BASE_LABEL}]")), reg!(Ebx)),
     ];
 
-    Asm::from_instructions(data, bss, text)
+    Asm::new(rodata, bss, text)
 }
 
 fn epilogue() -> Asm {
-    Asm::from_text([
+    Asm::empty().text([
         i!(Mov, reg!(Rdi), Op::Literal(0)),
         i!(Call, oplabel!(STD_EXIT_FN_LABEL.to_string())),
     ])
@@ -58,7 +58,7 @@ fn epilogue() -> Asm {
 
 fn translate_term(term: &Term, label_generator: &mut LabelGenerator) -> Asm {
     match term {
-        Term::Int(number) => Asm::from_text([
+        Term::Int(number) => Asm::empty().text([
             i!(Sub, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
             i!(
                 Mov,
@@ -67,24 +67,24 @@ fn translate_term(term: &Term, label_generator: &mut LabelGenerator) -> Asm {
                 Op::Literal(*number as i64)
             ),
         ]),
-        Term::Add => Asm::from_text([
+        Term::Add => Asm::empty().text([
             i!(Mov, reg!(Eax), indirect_register!(Ebx)),
             i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
             i!(Add, indirect_register!(Ebx), reg!(Eax)),
         ]),
-        Term::Sub => Asm::from_text([
+        Term::Sub => Asm::empty().text([
             i!(Mov, reg!(Eax), indirect_register!(Ebx)),
             i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
             i!(Sub, indirect_register!(Ebx), reg!(Eax)),
         ]),
-        Term::Mul => Asm::from_text([
+        Term::Mul => Asm::empty().text([
             i!(Xor, reg!(Rax), reg!(Rax)),
             i!(Mov, reg!(Eax), indirect_register!(Ebx)),
             i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
             i!(Mul, opexpr!(format!("dword[ebx]"))),
             i!(Mov, indirect_register!(Ebx), reg!(Eax)),
         ]),
-        Term::Div => Asm::from_text([
+        Term::Div => Asm::empty().text([
             i!(Mov, reg!(Edi), indirect_register!(Ebx)),
             i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
             i!(Xor, reg!(Rax), reg!(Rax)),
@@ -95,17 +95,17 @@ fn translate_term(term: &Term, label_generator: &mut LabelGenerator) -> Asm {
             i!(Div, reg!(Edi)),
             i!(Mov, indirect_register!(Ebx), reg!(Eax)),
         ]),
-        Term::Print => Asm::from_text([i!(Call, oplabel!(STD_PRINT_FN_LABEL))]),
-        Term::Dup => Asm::from_text([
+        Term::Print => Asm::empty().text([i!(Call, oplabel!(STD_PRINT_FN_LABEL))]),
+        Term::Dup => Asm::empty().text([
             i!(Mov, reg!(Eax), indirect_register!(Ebx)),
             i!(Sub, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
             i!(Mov, indirect_register!(Ebx), reg!(Eax)),
         ]),
-        Term::Drop => Asm::from_text([i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES))]),
+        Term::Drop => Asm::empty().text([i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES))]),
         Term::Take => {
             let exch_cycle_label = label_generator.get_nameless_label();
             let no_exch_label = label_generator.get_nameless_label();
-            Asm::from_text([
+            Asm::empty().text([
                 i!(Xor, reg!(Rcx), reg!(Rcx)),
                 i!(Mov, reg!(Ecx), indirect_register!(Ebx)),
                 i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),

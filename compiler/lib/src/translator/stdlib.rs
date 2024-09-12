@@ -17,7 +17,7 @@ const LIBC_PRINTF_LABEL: &str = "printf";
 const LIBC_EXIT_LABEL: &str = "exit";
 
 pub fn make_std_lib() -> Asm {
-    let data = [
+    let rodata = vec![
         i!(section!(Rodata)),
         i!(
             label!(OUTPUT_TEMPLATE_LABEL),
@@ -27,8 +27,8 @@ pub fn make_std_lib() -> Asm {
             Op::Literal(0)
         ),
     ];
-    let bss = [i!(section!(Bss))];
-    let text = [
+    let bss = vec![i!(section!(Bss))];
+    let text = vec![
         i!(Global, oplabel!(STD_PRINT_FN_LABEL.to_string())),
         i!(Global, oplabel!(STD_EXIT_FN_LABEL.to_string())),
         i!(Extern, oplabel!(LIBC_PRINTF_LABEL.to_string())),
@@ -51,5 +51,5 @@ pub fn make_std_lib() -> Asm {
         i!(Call, oplabel!(LIBC_EXIT_LABEL.to_string())),
     ];
 
-    Asm::from_instructions(data, bss, text)
+    Asm::new(rodata, bss, text)
 }

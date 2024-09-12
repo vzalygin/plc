@@ -6,6 +6,9 @@ pub enum Term {
     Mul,
     Div,
     Print,
+    Dup,
+    Drop,
+    Take,
 }
 
 #[derive(Clone, PartialEq, Debug)]

@@ -61,3 +61,21 @@ pub fn int<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
         })
         .parse(inp)
 }
+
+pub fn dup<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, Term, E> {
+    value(Term::Dup, tag("dup")).parse(inp)
+}
+
+pub fn drop<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, Term, E> {
+    value(Term::Dup, tag("drop")).parse(inp)
+}
+
+pub fn take<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, Term, E> {
+    value(Term::Dup, tag("take")).parse(inp)
+}

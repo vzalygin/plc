@@ -94,5 +94,8 @@ fn translate_term(term: &Term) -> Asm {
             i!(Mov, indirect_register!(Ebx), reg!(Eax)),
         ]),
         Term::Print => Asm::from_text([i!(Call, oplabel!(STD_PRINT_FN_LABEL))]),
+        Term::Dup => todo!(),
+        Term::Drop => todo!(),
+        Term::Take => todo!(),
     }
 }

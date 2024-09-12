@@ -10,7 +10,7 @@ use nom::{
     sequence::{delimited, terminated},
     Finish, IResult, Parser,
 };
-use terms::{add, div, int, mul, print, sub};
+use terms::{add, div, drop, dup, int, mul, print, sub, take};
 use util::separator;
 
 use crate::{
@@ -33,7 +33,10 @@ fn term_list<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     terminated(
         delimited(
             many0(separator),
-            separated_list0(many1(separator), alt((int, add, sub, mul, div, print))),
+            separated_list0(
+                many1(separator),
+                alt((int, add, sub, mul, div, print, dup, drop, take)),
+            ),
             many0(separator),
         ),
         eof,
@@ -134,6 +137,42 @@ mod tests {
         let source = ".";
         let exp = Ast {
             terms: vec![Term::Print],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn dup() {
+        let source = "dup";
+        let exp = Ast {
+            terms: vec![Term::Dup],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn drop() {
+        let source = "drop";
+        let exp = Ast {
+            terms: vec![Term::Drop],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn take() {
+        let source = "take";
+        let exp = Ast {
+            terms: vec![Term::Take],
         };
         let act = parse(source);
         assert!(act.is_ok());

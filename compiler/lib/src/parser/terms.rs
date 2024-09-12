@@ -71,11 +71,11 @@ pub fn dup<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
 pub fn drop<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str,
 ) -> IResult<&'s str, Term, E> {
-    value(Term::Dup, tag("drop")).parse(inp)
+    value(Term::Drop, tag("drop")).parse(inp)
 }
 
 pub fn take<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str,
 ) -> IResult<&'s str, Term, E> {
-    value(Term::Dup, tag("take")).parse(inp)
+    value(Term::Take, tag("take")).parse(inp)
 }

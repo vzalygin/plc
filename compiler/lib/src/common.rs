@@ -9,6 +9,8 @@ pub enum Term {
     Dup,
     Drop,
     Take,
+    List { terms: Vec<Term> },
+    Apply,
 }
 
 #[derive(Clone, PartialEq, Debug)]

@@ -137,5 +137,7 @@ fn translate_term(term: &Term, label_generator: &mut LabelGenerator) -> Asm {
                 i!(label!(no_exch_label.as_str())),
             ])
         }
+        Term::List { terms } => todo!(),
+        Term::Apply => todo!(),
     }
 }

@@ -1,10 +1,12 @@
 mod asm;
 mod consts;
 mod stdlib;
+mod util;
 
 pub use {
     asm::Asm,
     stdlib::{make_std_lib, STD_PRINT_FN_LABEL},
+    util::LabelGenerator,
 };
 
 use crate::common::{Ast, Term};
@@ -13,12 +15,12 @@ use stdlib::STD_EXIT_FN_LABEL;
 use x64asm::{indirect_register, macros::*};
 
 pub fn translate(ast: &Ast) -> Asm {
+    let mut label_generator = LabelGenerator::default();
     let asm = prelude();
 
-    let asm = ast
-        .terms
-        .iter()
-        .fold(asm, |asm, term| asm.append(translate_term(term)));
+    let asm = ast.terms.iter().fold(asm, |asm, term| {
+        asm.append(translate_term(term, &mut label_generator))
+    });
 
     asm.append(epilogue())
 }
@@ -54,7 +56,7 @@ fn epilogue() -> Asm {
     ])
 }
 
-fn translate_term(term: &Term) -> Asm {
+fn translate_term(term: &Term, label_generator: &mut LabelGenerator) -> Asm {
     match term {
         Term::Int(number) => Asm::from_text([
             i!(Sub, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
@@ -94,8 +96,42 @@ fn translate_term(term: &Term) -> Asm {
             i!(Mov, indirect_register!(Ebx), reg!(Eax)),
         ]),
         Term::Print => Asm::from_text([i!(Call, oplabel!(STD_PRINT_FN_LABEL))]),
-        Term::Dup => todo!(),
-        Term::Drop => todo!(),
-        Term::Take => todo!(),
+        Term::Dup => Asm::from_text([
+            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
+            i!(Sub, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Mov, indirect_register!(Ebx), reg!(Eax)),
+        ]),
+        Term::Drop => Asm::from_text([i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES))]),
+        Term::Take => {
+            let exch_cycle_label = label_generator.get_nameless_label();
+            Asm::from_text([
+                i!(Xor, reg!(Rcx), reg!(Rcx)),
+                i!(Mov, reg!(Ecx), indirect_register!(Ebx)),
+                i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+                i!(label!(exch_cycle_label.as_str())),
+                i!(
+                    Mov,
+                    reg!(Eax),
+                    opexpr!(format!("[EBX+ECX*{OP_SIZE_BYTES}]"))
+                ),
+                i!(
+                    Mov,
+                    reg!(Esi),
+                    opexpr!(format!("[EBX+ECX*{OP_SIZE_BYTES}-1]"))
+                ),
+                i!(
+                    Mov,
+                    opexpr!(format!("[EBX+ECX*{OP_SIZE_BYTES}]")),
+                    reg!(Esi)
+                ),
+                i!(
+                    Mov,
+                    opexpr!(format!("[EBX+ECX*{OP_SIZE_BYTES}-1]")),
+                    reg!(Eax)
+                ),
+                i!(Sub, reg!(Ecx), Op::Literal(1)),
+                i!(Jnz, oplabel!(exch_cycle_label)),
+            ])
+        }
     }
 }

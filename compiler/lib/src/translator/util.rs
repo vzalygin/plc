@@ -9,6 +9,6 @@ impl LabelGenerator {
 
     pub fn get_nameless_label(&mut self) -> String {
         self.count += 1;
-        format!("$$lb{}", self.count)
+        format!("$lb{}", self.count)
     }
 }

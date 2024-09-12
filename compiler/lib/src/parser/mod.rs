@@ -1,14 +1,17 @@
+mod terms;
+mod util;
+
 use anyhow::Result;
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_while},
-    character::complete::one_of,
-    combinator::{eof, value},
+    combinator::eof,
     error::{ContextError, ParseError, VerboseError},
-    multi::{many0, many1, many_m_n, separated_list0},
+    multi::{many0, many1, separated_list0},
     sequence::{delimited, terminated},
     Finish, IResult, Parser,
 };
+use terms::{add, div, int, mul, print, sub};
+use util::separator;
 
 use crate::{
     common::{Ast, Term},
@@ -36,80 +39,6 @@ fn term_list<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
         eof,
     )
     .parse(inp)
-}
-
-fn separator<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
-    inp: &'s str,
-) -> IResult<&'s str, (), E> {
-    alt((space_char, comment)).parse(inp)
-}
-
-fn space_char<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
-    inp: &'s str,
-) -> IResult<&'s str, (), E> {
-    one_of(" \n\t\r").map(|_| {}).parse(inp)
-}
-
-fn comment<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
-    inp: &'s str,
-) -> IResult<&'s str, (), E> {
-    tag("#")
-        .and(take_while(|x| x != '\n' && x != '\0'))
-        .map(|_| {})
-        .parse(inp)
-}
-
-fn add<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
-    inp: &'s str,
-) -> IResult<&'s str, Term, E> {
-    value(Term::Add, tag("+")).parse(inp)
-}
-
-fn sub<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
-    inp: &'s str,
-) -> IResult<&'s str, Term, E> {
-    value(Term::Sub, tag("-")).parse(inp)
-}
-
-fn mul<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
-    inp: &'s str,
-) -> IResult<&'s str, Term, E> {
-    value(Term::Mul, tag("*")).parse(inp)
-}
-
-fn div<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
-    inp: &'s str,
-) -> IResult<&'s str, Term, E> {
-    value(Term::Div, tag("/")).parse(inp)
-}
-
-fn print<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
-    inp: &'s str,
-) -> IResult<&'s str, Term, E> {
-    value(Term::Print, tag(".")).parse(inp)
-}
-
-fn int<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
-    inp: &'s str,
-) -> IResult<&'s str, Term, E> {
-    many_m_n(0, 1, one_of("-+"))
-        .and(many1(one_of("1234567890")))
-        .map(|(sign, digits)| {
-            let sign = if !sign.is_empty() && sign[0] == '-' {
-                -1
-            } else {
-                1
-            };
-            let uinteger = digits
-                .into_iter()
-                .collect::<String>()
-                .parse::<i32>()
-                .unwrap();
-            let integer = sign * uinteger;
-
-            Term::Int(integer)
-        })
-        .parse(inp)
 }
 
 #[cfg(test)]

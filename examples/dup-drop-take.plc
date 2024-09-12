@@ -1,0 +1,3 @@
+4 5 dup . . . # duplicate top element
+42 13 drop . # drop top element
+4 3 2 1 take . . . # take N'th element to top

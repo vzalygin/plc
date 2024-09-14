@@ -1,16 +1,32 @@
 #[derive(Clone, PartialEq, Debug)]
 pub enum Term {
     Int(i32),
+
+    // Arithmetic
     Add,
     Sub,
     Mul,
     Div,
+
     Print,
+
     Dup,
     Drop,
     Take,
+
+    // Lists
     List { terms: Vec<Term> },
     Apply,
+
+    // Logical
+    And,
+    Or,
+    Equals,
+    NotEquals,
+    Less,
+    LessEquals,
+    Greater,
+    GreaterEquals,
 }
 
 #[derive(Clone, PartialEq, Debug)]

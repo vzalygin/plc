@@ -323,4 +323,100 @@ mod tests {
         let act = act.unwrap();
         assert_eq!(exp, act);
     }
+
+    #[test]
+    fn and() {
+        let source = "and";
+        let exp = Ast {
+            terms: vec![Term::And],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn or() {
+        let source = "or";
+        let exp = Ast {
+            terms: vec![Term::Or],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn equals() {
+        let source = "==";
+        let exp = Ast {
+            terms: vec![Term::Equals],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn not_equals() {
+        let source = "!=";
+        let exp = Ast {
+            terms: vec![Term::NotEquals],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn less() {
+        let source = "<";
+        let exp = Ast {
+            terms: vec![Term::Less],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn less_equals() {
+        let source = "<=";
+        let exp = Ast {
+            terms: vec![Term::LessEquals],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn greater() {
+        let source = ">";
+        let exp = Ast {
+            terms: vec![Term::Greater],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn greater_equals() {
+        let source = ">=";
+        let exp = Ast {
+            terms: vec![Term::GreaterEquals],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
 }

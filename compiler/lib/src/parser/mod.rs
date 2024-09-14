@@ -3,15 +3,12 @@ mod util;
 
 use anyhow::Result;
 use nom::{
-    branch::alt,
     combinator::eof,
     error::{ContextError, ParseError, VerboseError},
-    multi::{many0, many1, separated_list0},
-    sequence::{delimited, terminated},
+    sequence::terminated,
     Finish, IResult, Parser,
 };
-use terms::{add, div, drop, dup, int, mul, print, sub, take};
-use util::separator;
+use terms::terms;
 
 use crate::{
     common::{Ast, Term},
@@ -19,7 +16,7 @@ use crate::{
 };
 
 pub fn parse<'s>(source: &'s str) -> Result<Ast, CompilerError<'s>> {
-    let (_, tokens) = match term_list::<VerboseError<&'s str>>(source).finish() {
+    let (_, tokens) = match axiom::<VerboseError<&'s str>>(source).finish() {
         Ok(v) => v,
         Err(e) => return Err(CompilerError::parser_error(source, e)),
     };
@@ -27,21 +24,10 @@ pub fn parse<'s>(source: &'s str) -> Result<Ast, CompilerError<'s>> {
     Ok(Ast::from_terms(tokens))
 }
 
-fn term_list<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+fn axiom<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str,
 ) -> IResult<&'s str, Vec<Term>, E> {
-    terminated(
-        delimited(
-            many0(separator),
-            separated_list0(
-                many1(separator),
-                alt((int, add, sub, mul, div, print, dup, drop, take)),
-            ),
-            many0(separator),
-        ),
-        eof,
-    )
-    .parse(inp)
+    terminated(terms, eof).parse(inp)
 }
 
 #[cfg(test)]
@@ -258,6 +244,79 @@ mod tests {
         let source = "2 3 + .";
         let exp = Ast {
             terms: vec![Term::Int(2), Term::Int(3), Term::Add, Term::Print],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn empty_list() {
+        let source = "[]";
+        let exp = Ast {
+            terms: vec![Term::List { terms: vec![] }],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn list_with_terms() {
+        let source = "[1 .]";
+        let exp = Ast {
+            terms: vec![Term::List {
+                terms: vec![Term::Int(1), Term::Print],
+            }],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn list_with_terms_between_terms() {
+        let source = "+ [1 .] -";
+        let exp = Ast {
+            terms: vec![
+                Term::Add,
+                Term::List {
+                    terms: vec![Term::Int(1), Term::Print],
+                },
+                Term::Sub,
+            ],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn apply() {
+        let source = "!";
+        let exp = Ast {
+            terms: vec![Term::Apply],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn list_apply() {
+        let source = "[5 .]!";
+        let exp = Ast {
+            terms: vec![
+                Term::List {
+                    terms: vec![Term::Int(5), Term::Print],
+                },
+                Term::Apply,
+            ],
         };
         let act = parse(source);
         assert!(act.is_ok());

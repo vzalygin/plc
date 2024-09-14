@@ -4,16 +4,42 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "fmt",
+            "label": "fmt && clippy",
             "type": "shell",
-            "command": "cargo fmt --all --manifest-path ./compiler/Cargo.toml",
+            "command": "cargo fmt --all --manifest-path ./compiler/Cargo.toml; cargo clippy --fix --allow-dirty --allow-staged --manifest-path ./compiler/Cargo.toml",
             "problemMatcher": []
         },
         {
-            "label": "clippy",
-            "type": "shell",
-            "command": "cargo clippy --fix --allow-dirty --allow-staged --manifest-path ./compiler/Cargo.toml",
-            "problemMatcher": []
+            "type": "cargo",
+            "command": "build",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "args": [
+                "--manifest-path",
+                "./compiler/Cargo.toml"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "label": "rust: cargo build 1"
+        },
+        {
+            "type": "cargo",
+            "command": "test",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "args": [
+                "--manifest-path",
+                "./compiler/Cargo.toml"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "label": "rust: cargo test"
         }
     ]
 }

@@ -1,0 +1,4 @@
+[ 40 2 + . ] # make a list
+! # apply it
+
+[ [ 5 [ 4 ]! + ]! [ . ]! ]! # a little bit harder example, 5 + 4

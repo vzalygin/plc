@@ -4,7 +4,7 @@ use nom::{
     character::complete::one_of,
     combinator::value,
     error::{ContextError, ParseError},
-    multi::{many0, many1, many_m_n, separated_list0},
+    multi::{many0, many1, many_m_n},
     sequence::delimited,
     IResult, Parser,
 };
@@ -18,7 +18,12 @@ pub fn terms<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
 ) -> IResult<&'s str, Vec<Term>, E> {
     delimited(
         many0(separator),
-        separated_list0(many1(separator), term),
+        many0(term.and(many0(separator))).map(|term_pairs| {
+            term_pairs
+                .into_iter()
+                .map(|term_pair| term_pair.0)
+                .collect()
+        }),
         many0(separator),
     )
     .parse(inp)

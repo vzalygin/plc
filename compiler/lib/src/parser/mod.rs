@@ -306,4 +306,21 @@ mod tests {
         let act = act.unwrap();
         assert_eq!(exp, act);
     }
+
+    #[test]
+    fn list_apply() {
+        let source = "[5 .]!";
+        let exp = Ast {
+            terms: vec![
+                Term::List {
+                    terms: vec![Term::Int(5), Term::Print],
+                },
+                Term::Apply,
+            ],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
 }

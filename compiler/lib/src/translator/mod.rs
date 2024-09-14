@@ -46,7 +46,7 @@ fn prelude() -> Asm {
         i!(Mov, opexpr!(format!("[{OP_STACK_BASE_LABEL}]")), reg!(Ebx)),
     ];
 
-    Asm::new(rodata, bss, text)
+    Asm::new(rodata, bss, text, vec![])
 }
 
 fn epilogue() -> Asm {
@@ -78,18 +78,16 @@ fn translate_term(term: &Term, label_generator: &mut LabelGenerator) -> Asm {
             i!(Sub, indirect_register!(Ebx), reg!(Eax)),
         ]),
         Term::Mul => Asm::empty().text([
-            i!(Xor, reg!(Rax), reg!(Rax)),
-            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
+            i!(Mov, reg!(Rax), indirect_register!(Ebx)),
             i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
-            i!(Mul, opexpr!(format!("dword[ebx]"))),
+            i!(Mul, opexpr!(format!("dword[EBX]"))),
             i!(Mov, indirect_register!(Ebx), reg!(Eax)),
         ]),
         Term::Div => Asm::empty().text([
             i!(Mov, reg!(Edi), indirect_register!(Ebx)),
             i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
-            i!(Xor, reg!(Rax), reg!(Rax)),
             i!(Xor, reg!(Rdx), reg!(Rdx)),
-            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
+            i!(Mov, reg!(Rax), indirect_register!(Ebx)),
             i!(Cltq),
             i!(Cqto),
             i!(Div, reg!(Edi)),
@@ -103,8 +101,8 @@ fn translate_term(term: &Term, label_generator: &mut LabelGenerator) -> Asm {
         ]),
         Term::Drop => Asm::empty().text([i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES))]),
         Term::Take => {
-            let exch_cycle_label = label_generator.get_nameless_label();
-            let no_exch_label = label_generator.get_nameless_label();
+            let exch_cycle_label = label_generator.get_label();
+            let no_exch_label = label_generator.get_label();
             Asm::empty().text([
                 i!(Xor, reg!(Rcx), reg!(Rcx)),
                 i!(Mov, reg!(Ecx), indirect_register!(Ebx)),
@@ -137,7 +135,31 @@ fn translate_term(term: &Term, label_generator: &mut LabelGenerator) -> Asm {
                 i!(label!(no_exch_label.as_str())),
             ])
         }
-        Term::List { terms } => todo!(),
-        Term::Apply => todo!(),
+        Term::List { terms } => {
+            let label = label_generator.get_label();
+
+            let list_asm = Asm::empty().text([
+                i!(Sub, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+                i!(
+                    Mov,
+                    indirect_register!(Ebx),
+                    opexpr!(format!("dword {label}"))
+                ),
+            ]);
+
+            let inner_asm = Asm::empty().text([i!(label!(label.as_str()))]);
+            let inner_asm = terms.iter().fold(inner_asm, |asm, term| {
+                asm.append(translate_term(term, label_generator))
+            });
+            let inner_asm = inner_asm.text([i!(Ret)]);
+            let inner_asm = Asm::new(inner_asm.rodata, inner_asm.bss, vec![], inner_asm.text_tail)
+                .text_tail(inner_asm.text);
+
+            list_asm.append(inner_asm)
+        }
+        Term::Apply => Asm::empty().text([
+            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Call, opexpr!(format!("[EBX-{OP_SIZE_BYTES}]"))),
+        ]),
     }
 }

@@ -7,7 +7,7 @@ impl LabelGenerator {
         LabelGenerator { count: 0 }
     }
 
-    pub fn get_nameless_label(&mut self) -> String {
+    pub fn get_label(&mut self) -> String {
         self.count += 1;
         format!("$lb{}", self.count)
     }

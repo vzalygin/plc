@@ -51,5 +51,5 @@ pub fn make_std_lib() -> Asm {
         i!(Call, oplabel!(LIBC_EXIT_LABEL.to_string())),
     ];
 
-    Asm::new(rodata, bss, text)
+    Asm::new(rodata, bss, text, vec![])
 }

@@ -20,7 +20,7 @@ impl Asm {
         }
     }
 
-    pub fn new_with_tail(
+    pub fn new(
         rodata: Vec<Instruction>,
         bss: Vec<Instruction>,
         text: Vec<Instruction>,
@@ -31,15 +31,6 @@ impl Asm {
             bss,
             text,
             text_tail,
-        }
-    }
-
-    pub fn new(rodata: Vec<Instruction>, bss: Vec<Instruction>, text: Vec<Instruction>) -> Asm {
-        Asm {
-            rodata,
-            bss,
-            text,
-            text_tail: vec![],
         }
     }
 
@@ -54,31 +45,31 @@ impl Asm {
         text.extend(asm.text);
         text_tail.extend(asm.text_tail);
 
-        Self::new_with_tail(data, bss, text, text_tail)
+        Self::new(data, bss, text, text_tail)
     }
 
-    pub fn rodata<const L: usize>(self, rodata: [Instruction; L]) -> Asm {
+    pub fn rodata(self, rodata: impl IntoIterator<Item = Instruction>) -> Asm {
         let mut old_rodata = self.rodata;
         old_rodata.extend(rodata);
-        Self::new_with_tail(old_rodata, self.bss, self.text, self.text_tail)
+        Self::new(old_rodata, self.bss, self.text, self.text_tail)
     }
 
-    pub fn bss<const L: usize>(self, bss: [Instruction; L]) -> Asm {
+    pub fn bss(self, bss: impl IntoIterator<Item = Instruction>) -> Asm {
         let mut old_bss = self.bss;
         old_bss.extend(bss);
-        Self::new_with_tail(self.rodata, old_bss, self.text, self.text_tail)
+        Self::new(self.rodata, old_bss, self.text, self.text_tail)
     }
 
-    pub fn text<const L: usize>(self, text: [Instruction; L]) -> Asm {
+    pub fn text(self, text: impl IntoIterator<Item = Instruction>) -> Asm {
         let mut old_text = self.text;
         old_text.extend(text);
-        Self::new_with_tail(self.rodata, self.bss, old_text, self.text_tail)
+        Self::new(self.rodata, self.bss, old_text, self.text_tail)
     }
 
-    pub fn text_tail<const L: usize>(self, text_tail: [Instruction; L]) -> Asm {
+    pub fn text_tail(self, text_tail: impl IntoIterator<Item = Instruction>) -> Asm {
         let mut old_text_tail = self.text_tail;
         old_text_tail.extend(text_tail);
-        Self::new_with_tail(self.rodata, self.bss, self.text, old_text_tail)
+        Self::new(self.rodata, self.bss, self.text, old_text_tail)
     }
 
     pub fn into_assembly(self) -> String {
@@ -86,6 +77,7 @@ impl Asm {
             .into_iter()
             .chain(self.bss)
             .chain(self.text)
+            .chain(self.text_tail)
             .collect::<Vec<Instruction>>()
             .to_assembly(Separator::Space)
     }

@@ -8,6 +8,19 @@
             "type": "shell",
             "command": "cargo fmt --all --manifest-path ./compiler/Cargo.toml; cargo clippy --fix --allow-dirty --allow-staged --manifest-path ./compiler/Cargo.toml",
             "problemMatcher": []
+        },
+        {
+            "type": "cargo",
+            "command": "build",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "args": ["--manifest-path", "./compiler/Cargo.toml"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "label": "rust: cargo build 1"
         }
     ]
 }

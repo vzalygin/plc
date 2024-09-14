@@ -1,0 +1,2 @@
+1 2 == . # is 1 equal 2 
+42 -42 > . # is 42 greater then -42

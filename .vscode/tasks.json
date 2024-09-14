@@ -15,12 +15,31 @@
             "problemMatcher": [
                 "$rustc"
             ],
-            "args": ["--manifest-path", "./compiler/Cargo.toml"],
+            "args": [
+                "--manifest-path",
+                "./compiler/Cargo.toml"
+            ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "label": "rust: cargo build 1"
+        },
+        {
+            "type": "cargo",
+            "command": "test",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "args": [
+                "--manifest-path",
+                "./compiler/Cargo.toml"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "label": "rust: cargo test"
         }
     ]
 }

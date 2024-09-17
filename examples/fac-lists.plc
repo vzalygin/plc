@@ -1,16 +1,17 @@
-6 # input N
+6                    # input N
 [
-    1 take # move N to the top
-    dup
-    [
-        dup 1 - # copy N and decrement for the next iteration
-        2 take dup ! # call next iteration
-        *
+    1 take           # move N to the top
+    dup              # dup N for the next iterations
+    [                # if current N greater than 1
+        dup 1 -      # copy N and decrement for the next iteration
+        2 take dup ! # call the next iteration
+        *            # after call multiply current N and the product of the next iterations
     ]
-    [
-        1 take drop # drop a next code block
+    [                # if current N is 1
+        1 take drop  # drop a next code block, so we just return a zero on the top of stack
     ]
-    2 take 1 > ?!
-] dup !
+    [2 take 1 > ]!   # get current N and compare is that greater then 1
+    ?!               # execute if and chosen branch
+] dup !              # duplicate list (for saving for future iterations) and call it
 
-. # print result
+.                    # print the result

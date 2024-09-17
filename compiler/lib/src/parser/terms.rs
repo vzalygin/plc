@@ -52,6 +52,8 @@ fn term<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
         greater_equals,
         greater,
         apply,
+        _if,
+        alt((not, _bool)),
     ))
     .parse(inp)
 }
@@ -153,6 +155,12 @@ fn or<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     value(Term::Or, tag("or")).parse(inp)
 }
 
+fn not<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, Term, E> {
+    value(Term::Not, tag("not")).parse(inp)
+}
+
 fn equals<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str,
 ) -> IResult<&'s str, Term, E> {
@@ -187,4 +195,16 @@ fn greater_equals<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str,
 ) -> IResult<&'s str, Term, E> {
     value(Term::GreaterEquals, tag(">=")).parse(inp)
+}
+
+fn _if<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, Term, E> {
+    value(Term::If, tag("?")).parse(inp)
+}
+
+fn _bool<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, Term, E> {
+    value(Term::Bool, tag("b")).parse(inp)
 }

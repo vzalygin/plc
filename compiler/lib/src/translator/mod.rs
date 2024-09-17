@@ -29,11 +29,12 @@ fn prelude() -> Asm {
     let rodata = vec![i!(section!(Rodata))];
     let bss = vec![
         i!(section!(Bss)),
+        i!(label!(OP_STACK_BASE_LABEL), opexpr!(format!("resd 1"))),
+        i!(label!(DWORD_ZERO_LABEL), opexpr!(format!("resd 1"))),
         i!(
             label!(OP_STACK_LABEL),
             opexpr!(format!("resb {OP_STACK_SIZE}"))
         ),
-        i!(label!(OP_STACK_BASE_LABEL), opexpr!(format!("resd 1"))),
     ];
     let text = vec![
         i!(Extern, oplabel!(STD_PRINT_FN_LABEL.to_string())),
@@ -161,93 +162,85 @@ fn translate_term(term: &Term, label_generator: &mut LabelGenerator) -> Asm {
             i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
             i!(Call, opexpr!(format!("[EBX-{OP_SIZE_BYTES}]"))),
         ]),
+        Term::Bool => Asm::empty().text([
+            i!(Cmp, indirect_register!(Ebx), opexpr!("dword 0")),
+            i!(Mov, reg!(Eax), Op::Literal(1)),
+            i!(Cmovz, reg!(Eax), opexpr!(format!("[{DWORD_ZERO_LABEL}]"))),
+            i!(Mov, indirect_register!(Ebx), reg!(Eax)),
+        ]),
+        Term::Not => Asm::empty().text([
+            i!(Xor, indirect_register!(Ebx), opexpr!("dword -1")),
+            i!(Mov, reg!(Eax), Op::Literal(1)),
+            i!(Cmp, indirect_register!(Ebx), opexpr!("dword 0")),
+            i!(Cmovz, reg!(Eax), opexpr!(format!("[{DWORD_ZERO_LABEL}]"))),
+            i!(Add, indirect_register!(Ebx), reg!(Eax)),
+        ]),
         Term::And => Asm::empty().text([
             i!(Mov, reg!(Eax), indirect_register!(Ebx)),
             i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
-            i!(Add, indirect_register!(Ebx), reg!(Eax)),
+            i!(And, indirect_register!(Ebx), reg!(Eax)),
         ]),
         Term::Or => Asm::empty().text([
             i!(Mov, reg!(Eax), indirect_register!(Ebx)),
             i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
             i!(Or, indirect_register!(Ebx), reg!(Eax)),
         ]),
-        Term::Equals => {
-            let skip_false = label_generator.get_label();
-
-            Asm::empty().text([
-                i!(Mov, reg!(Eax), indirect_register!(Ebx)),
-                i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
-                i!(Cmp, indirect_register!(Ebx), reg!(Eax)),
-                i!(Mov, indirect_register!(Ebx), opexpr!("dword 1")),
-                i!(Je, oplabel!(skip_false)),
-                i!(Mov, indirect_register!(Ebx), opexpr!("dword 0")),
-                i!(label!(skip_false.as_str())),
-            ])
-        }
-        Term::NotEquals => {
-            let skip_false = label_generator.get_label();
-
-            Asm::empty().text([
-                i!(Mov, reg!(Eax), indirect_register!(Ebx)),
-                i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
-                i!(Cmp, indirect_register!(Ebx), reg!(Eax)),
-                i!(Mov, indirect_register!(Ebx), opexpr!("dword 1")),
-                i!(Jne, oplabel!(skip_false)),
-                i!(Mov, indirect_register!(Ebx), opexpr!("dword 0")),
-                i!(label!(skip_false.as_str())),
-            ])
-        }
-        Term::Less => {
-            let skip_false = label_generator.get_label();
-
-            Asm::empty().text([
-                i!(Mov, reg!(Eax), indirect_register!(Ebx)),
-                i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
-                i!(Cmp, indirect_register!(Ebx), reg!(Eax)),
-                i!(Mov, indirect_register!(Ebx), opexpr!("dword 1")),
-                i!(Jl, oplabel!(skip_false)),
-                i!(Mov, indirect_register!(Ebx), opexpr!("dword 0")),
-                i!(label!(skip_false.as_str())),
-            ])
-        }
-        Term::LessEquals => {
-            let skip_false = label_generator.get_label();
-
-            Asm::empty().text([
-                i!(Mov, reg!(Eax), indirect_register!(Ebx)),
-                i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
-                i!(Cmp, indirect_register!(Ebx), reg!(Eax)),
-                i!(Mov, indirect_register!(Ebx), opexpr!("dword 1")),
-                i!(Jle, oplabel!(skip_false)),
-                i!(Mov, indirect_register!(Ebx), opexpr!("dword 0")),
-                i!(label!(skip_false.as_str())),
-            ])
-        }
-        Term::Greater => {
-            let skip_false = label_generator.get_label();
-
-            Asm::empty().text([
-                i!(Mov, reg!(Eax), indirect_register!(Ebx)),
-                i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
-                i!(Cmp, indirect_register!(Ebx), reg!(Eax)),
-                i!(Mov, indirect_register!(Ebx), opexpr!("dword 1")),
-                i!(Jg, oplabel!(skip_false)),
-                i!(Mov, indirect_register!(Ebx), opexpr!("dword 0")),
-                i!(label!(skip_false.as_str())),
-            ])
-        }
-        Term::GreaterEquals => {
-            let skip_false = label_generator.get_label();
-
-            Asm::empty().text([
-                i!(Mov, reg!(Eax), indirect_register!(Ebx)),
-                i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
-                i!(Cmp, indirect_register!(Ebx), reg!(Eax)),
-                i!(Mov, indirect_register!(Ebx), opexpr!("dword 1")),
-                i!(Jge, oplabel!(skip_false)),
-                i!(Mov, indirect_register!(Ebx), opexpr!("dword 0")),
-                i!(label!(skip_false.as_str())),
-            ])
-        }
+        Term::Equals => Asm::empty().text([
+            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
+            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Cmp, indirect_register!(Ebx), reg!(Eax)),
+            i!(Mov, reg!(Eax), Op::Literal(1)),
+            i!(Cmovne, reg!(Eax), opexpr!(format!("[{DWORD_ZERO_LABEL}]"))),
+            i!(Mov, indirect_register!(Ebx), reg!(Eax)),
+        ]),
+        Term::NotEquals => Asm::empty().text([
+            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
+            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Cmp, indirect_register!(Ebx), reg!(Eax)),
+            i!(Mov, reg!(Eax), Op::Literal(1)),
+            i!(Cmove, reg!(Eax), opexpr!(format!("[{DWORD_ZERO_LABEL}]"))),
+            i!(Mov, indirect_register!(Ebx), reg!(Eax)),
+        ]),
+        Term::Less => Asm::empty().text([
+            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
+            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Cmp, indirect_register!(Ebx), reg!(Eax)),
+            i!(Mov, reg!(Eax), Op::Literal(1)),
+            i!(Cmovge, reg!(Eax), opexpr!(format!("[{DWORD_ZERO_LABEL}]"))),
+            i!(Mov, indirect_register!(Ebx), reg!(Eax)),
+        ]),
+        Term::LessEquals => Asm::empty().text([
+            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
+            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Cmp, indirect_register!(Ebx), reg!(Eax)),
+            i!(Mov, reg!(Eax), Op::Literal(1)),
+            i!(Cmovg, reg!(Eax), opexpr!(format!("[{DWORD_ZERO_LABEL}]"))),
+            i!(Mov, indirect_register!(Ebx), reg!(Eax)),
+        ]),
+        Term::Greater => Asm::empty().text([
+            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
+            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Cmp, indirect_register!(Ebx), reg!(Eax)),
+            i!(Mov, reg!(Eax), Op::Literal(1)),
+            i!(Cmovle, reg!(Eax), opexpr!(format!("[{DWORD_ZERO_LABEL}]"))),
+            i!(Mov, indirect_register!(Ebx), reg!(Eax)),
+        ]),
+        Term::GreaterEquals => Asm::empty().text([
+            i!(Mov, reg!(Eax), indirect_register!(Ebx)),
+            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Cmp, indirect_register!(Ebx), reg!(Eax)),
+            i!(Mov, reg!(Eax), Op::Literal(1)),
+            i!(Cmovl, reg!(Eax), opexpr!(format!("[{DWORD_ZERO_LABEL}]"))),
+            i!(Mov, indirect_register!(Ebx), reg!(Eax)),
+        ]),
+        Term::If => Asm::empty().text([
+            // condition
+            i!(Mov, reg!(Rax), indirect_register!(Ebx)),
+            // else
+            i!(Mov, reg!(Rsi), opexpr!(format!("[EBX+{OP_SIZE_BYTES}]"))),
+            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES * 2)),
+            i!(Cmp, reg!(Rax), Op::Literal(0)),
+            i!(Cmove, indirect_register!(Ebx), reg!(Rsi)),
+        ]),
     }
 }

@@ -19,6 +19,9 @@ pub enum Term {
     Apply,
 
     // Logical
+    If,
+    Bool,
+    Not,
     And,
     Or,
     Equals,

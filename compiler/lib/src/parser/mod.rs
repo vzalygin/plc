@@ -419,4 +419,40 @@ mod tests {
         let act = act.unwrap();
         assert_eq!(exp, act);
     }
+
+    #[test]
+    fn _if() {
+        let source = "?";
+        let exp = Ast {
+            terms: vec![Term::If],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn not() {
+        let source = "not";
+        let exp = Ast {
+            terms: vec![Term::Not],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn bool() {
+        let source = "b";
+        let exp = Ast {
+            terms: vec![Term::Bool],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
 }

@@ -233,14 +233,20 @@ fn translate_term(term: &Term, label_generator: &mut LabelGenerator) -> Asm {
             i!(Cmovl, reg!(Eax), opexpr!(format!("[{DWORD_ZERO_LABEL}]"))),
             i!(Mov, indirect_register!(Ebx), reg!(Eax)),
         ]),
-        Term::If => Asm::empty().text([
-            // condition
-            i!(Mov, reg!(Rax), indirect_register!(Ebx)),
-            // else
-            i!(Mov, reg!(Rsi), opexpr!(format!("[EBX+{OP_SIZE_BYTES}]"))),
-            i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES * 2)),
-            i!(Cmp, reg!(Rax), Op::Literal(0)),
-            i!(Cmove, indirect_register!(Ebx), reg!(Rsi)),
-        ]),
+        Term::If => {
+            let on_else = label_generator.get_label();
+
+            Asm::empty().text([
+                // condition
+                i!(Mov, reg!(Rax), indirect_register!(Ebx)),
+                // else
+                i!(Mov, reg!(Rsi), opexpr!(format!("[EBX+{OP_SIZE_BYTES}]"))),
+                i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES * 2)),
+                i!(Cmp, reg!(Rax), Op::Literal(0)),
+                i!(Jne, oplabel!(on_else)),
+                i!(Mov, indirect_register!(Ebx), reg!(Rsi)),
+                i!(label!(on_else.as_str())),
+            ])
+        }
     }
 }

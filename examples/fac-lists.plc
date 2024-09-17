@@ -1,0 +1,16 @@
+6 # input N
+[
+    1 take # move N to the top
+    dup
+    [
+        dup 1 - # copy N and decrement for the next iteration
+        2 take dup ! # call next iteration
+        *
+    ]
+    [
+        1 take drop # drop a next code block
+    ]
+    2 take 1 > ?!
+] dup !
+
+. # print result

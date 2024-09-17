@@ -1,0 +1,12 @@
+5           # on true 
+4           # on false
+0 0 !=      # condition
+?           # if 
+.
+
+# also the lists are allowed
+5
+[ 5 + ]
+[ 4 * ]
+42 0 >
+? ! .

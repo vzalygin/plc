@@ -1,2 +1,19 @@
-1 2 == . # is 1 equal 2 
-42 -42 > . # is 42 greater then -42
+1 2 !=      . # 1 -- 1 does not equal 2 
+1 2 ==      . # 0
+42 -42 >    . # 1 -- 42 greater than -42
+42 -42 >=   . # 1
+42 -42 <    . # 0
+42 -42 <=   . # 0
+42 42 >     . # 0
+42 42 >=    . # 1
+42 42 <     . # 0
+42 42 <=    . # 1
+42          . # just a separator
+10b         . # 1 -- 10 is true
+-10b        . # 1 -- -10 is also true
+0b          . # 0
+11b 14b and . # 1 -- 1 && 1
+11b 0b  and . # 0 -- 1 && 0
+11b 0b  or  . # 1
+11  12  and . # 8 -- also a bitwise operator
+11   14  or . # 15

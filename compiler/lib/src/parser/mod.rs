@@ -3,9 +3,8 @@ mod util;
 
 use anyhow::Result;
 use nom::{
-    combinator::eof,
+    combinator::all_consuming,
     error::{ContextError, ParseError, VerboseError},
-    sequence::terminated,
     Finish, IResult, Parser,
 };
 use terms::terms;
@@ -27,7 +26,7 @@ pub fn parse<'s>(source: &'s str) -> Result<Ast, CompilerError<'s>> {
 fn axiom<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str,
 ) -> IResult<&'s str, Vec<Term>, E> {
-    terminated(terms, eof).parse(inp)
+    all_consuming(terms).parse(inp)
 }
 
 #[cfg(test)]
@@ -449,6 +448,70 @@ mod tests {
         let source = "b";
         let exp = Ast {
             terms: vec![Term::Bool],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn bind() {
+        let source = ":test123";
+        let exp = Ast {
+            terms: vec![Term::Bind {
+                identifier: "test123".to_string(),
+            }],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn bind_begins_with_keyword() {
+        let source = ":andTest";
+        let exp = Ast {
+            terms: vec![Term::Bind {
+                identifier: "andTest".to_string(),
+            }],
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
+
+    #[test]
+    fn bind_wrong_identifier_forbidden_char() {
+        let source = ":1test123";
+        let act = parse(source);
+        assert!(act.is_err());
+    }
+
+    #[test]
+    fn bind_wrong_identifier_keyword() {
+        let source = ":and";
+        let act = parse(source);
+        assert!(act.is_err());
+    }
+
+    #[test]
+    fn bind_wrong_identifier_keyword_() {
+        let source = ":and!";
+        let act = parse(source);
+        println!("{:?}", act);
+        assert!(act.is_err());
+    }
+
+    #[test]
+    fn call() {
+        let source = "test123";
+        let exp = Ast {
+            terms: vec![Term::Put {
+                identifier: "test123".to_string(),
+            }],
         };
         let act = parse(source);
         assert!(act.is_ok());

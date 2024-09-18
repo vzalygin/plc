@@ -30,6 +30,10 @@ pub enum Term {
     LessEquals,
     Greater,
     GreaterEquals,
+
+    // Bindings
+    Bind { identifier: String },
+    Put { identifier: String },
 }
 
 #[derive(Clone, PartialEq, Debug)]

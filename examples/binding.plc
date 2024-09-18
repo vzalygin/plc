@@ -1,0 +1,5 @@
+5 :five                 # bind a value from the top of the stack
+five .                  # put the value to the top
+
+[ 42 . ] :something1    # there is no limitatins about type of data for binding
+something1!             # put and call it

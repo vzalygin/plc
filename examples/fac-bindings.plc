@@ -1,0 +1,17 @@
+[
+    dup              # dup N for the next iterations
+    [                # if current N greater than 1
+        dup 1 -      # copy N and decrement for the next iteration
+        fac!         # call the next iteration
+        *            # after call multiply current N and the product of the next iterations
+    ]
+    [                # if current N is 1
+                     # then do nothing
+    ]
+    [2 take 1 > ]!   # get current N and compare is that greater then 1
+    ?!               # execute if and chosen branch
+] :fac               # bind a list to a "fac" name
+
+6                    # input N
+fac!                 # put and apply the list
+.                    # print the result

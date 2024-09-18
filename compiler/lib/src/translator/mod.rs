@@ -248,5 +248,17 @@ fn translate_term(term: &Term, label_generator: &mut LabelGenerator) -> Asm {
                 i!(label!(on_else.as_str())),
             ])
         }
+        Term::Bind { identifier: name } => Asm::empty()
+            .bss([i!(label!(name), opexpr!(format!("resq 1")))])
+            .text([
+                i!(Mov, reg!(Rax), indirect_register!(Ebx)),
+                i!(Add, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+                i!(Mov, opexpr!(format!("[{name}]")), reg!(Rax)),
+            ]),
+        Term::Put { identifier: name } => Asm::empty().text([
+            i!(Mov, reg!(Rax), opexpr!(format!("[{name}]"))),
+            i!(Sub, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
+            i!(Mov, indirect_register!(Ebx), reg!(Rax)),
+        ]),
     }
 }

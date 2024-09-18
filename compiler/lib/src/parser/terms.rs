@@ -1,8 +1,8 @@
 use nom::{
     branch::alt,
-    bytes::complete::tag,
-    character::complete::one_of,
-    combinator::value,
+    bytes::complete::{tag, take_while, take_while_m_n},
+    character::complete::{char, one_of},
+    combinator::{all_consuming, not, peek, value, verify},
     error::{ContextError, ParseError},
     multi::{many0, many1, many_m_n},
     sequence::delimited,
@@ -34,17 +34,15 @@ fn term<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
 ) -> IResult<&'s str, Term, E> {
     alt((
         int,
+        put,
+        alphabetic_keyword,
+        bind,
         add,
         sub,
         mul,
         div,
         print,
-        dup,
-        drop,
-        take,
         list,
-        and,
-        or,
         not_equals,
         equals,
         less_equals,
@@ -53,9 +51,14 @@ fn term<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
         greater,
         apply,
         _if,
-        alt((not, _bool)),
     ))
     .parse(inp)
+}
+
+fn alphabetic_keyword<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, Term, E> {
+    alt((_bool, and, or, _not, take, dup, drop)).parse(inp)
 }
 
 fn add<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
@@ -155,7 +158,7 @@ fn or<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     value(Term::Or, tag("or")).parse(inp)
 }
 
-fn not<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+fn _not<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str,
 ) -> IResult<&'s str, Term, E> {
     value(Term::Not, tag("not")).parse(inp)
@@ -207,4 +210,42 @@ fn _bool<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
     inp: &'s str,
 ) -> IResult<&'s str, Term, E> {
     value(Term::Bool, tag("b")).parse(inp)
+}
+
+fn bind<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, Term, E> {
+    char(':')
+        .and(put)
+        .map(|(_, term)| {
+            if let Term::Put { identifier } = term {
+                Term::Bind { identifier }
+            } else {
+                unreachable!()
+            }
+        })
+        .parse(inp)
+}
+
+/// первый символ: буква, _
+/// остальные символы: буква, цифра, _
+fn put<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, Term, E> {
+    verify(
+        peek(take_while_m_n(1, 1, |x: char| {
+            x.is_alphabetic() || x == '_'
+        }))
+        .and(take_while(|x: char| x.is_alphanumeric() || x == '_'))
+        .map(|(_, id): (&str, &str)| id),
+        |x| {
+            not(all_consuming(alphabetic_keyword::<()>))
+                .parse(x)
+                .is_ok()
+        },
+    )
+    .map(|x| Term::Put {
+        identifier: x.to_string(),
+    })
+    .parse(inp)
 }

@@ -3,7 +3,7 @@ mod util;
 
 use anyhow::Result;
 use nom::{
-    combinator::{all_consuming},
+    combinator::all_consuming,
     error::{ContextError, ParseError, VerboseError},
     Finish, IResult, Parser,
 };

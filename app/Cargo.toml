@@ -13,8 +13,8 @@ copyright = "2024, Vyacheslav Zalygin <vya.zalygin@gmail.com>"
 license-file = ["../LICENSE", "4"]
 extended-description = """\
 A compiler for turing complete postfix stack language."""
-depends = "$auto"
-section = "utility"
+depends = "nasm"
+section = "development"
 priority = "optional"
 assets = [
     ["../target/release/plc", "usr/bin/", "755"],

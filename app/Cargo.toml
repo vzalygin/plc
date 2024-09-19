@@ -17,7 +17,7 @@ depends = "$auto"
 section = "utility"
 priority = "optional"
 assets = [
-    ["target/release/cargo-deb", "usr/bin/", "755"],
+    ["../target/release/plc", "usr/bin/", "755"],
     ["../README.md", "usr/share/doc/plc/README", "644"],
 ]
 

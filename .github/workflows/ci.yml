@@ -8,7 +8,6 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  OPTIONS: --manifest-path ./compiler/Cargo.toml
 
 jobs:
   build:
@@ -25,13 +24,13 @@ jobs:
         workspaces: compiler
 
     - name: Lint
-      run: cargo fmt --check --all $OPTIONS
+      run: cargo fmt --check --all
 
     - name: Build
-      run: cargo build --verbose $OPTIONS
+      run: cargo build --verbose
 
     - name: Clippy
-      run: cargo clippy $OPTIONS
+      run: cargo clippy
 
     - name: Unit tests
-      run: cargo test --verbose $OPTIONS
+      run: cargo test --verbose

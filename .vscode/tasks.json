@@ -6,7 +6,7 @@
         {
             "label": "fmt && clippy",
             "type": "shell",
-            "command": "cargo fmt --all --manifest-path ./compiler/Cargo.toml; cargo clippy --fix --allow-dirty --allow-staged --manifest-path ./compiler/Cargo.toml",
+            "command": "cargo fmt --all; cargo clippy --fix --allow-dirty --allow-staged",
             "problemMatcher": []
         },
         {

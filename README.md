@@ -47,7 +47,15 @@ X != 0 => X = 1
 - Оператор `:{name}` для привязывания имени к элементу с вершины стека. Оператор привязки возможно указать только 1 раз для одного имени (временная дырка до ввода мидлвари); 
 - Оператор `{name}`, кладущий на стек элемент, привязанный к имени `name`.
 
-## Как использовать
+## Как получить
+
+Для установки необходимо выполнить:
+
+```bash
+curl -sSfL https://raw.githubusercontent.com/vzalygin/plc/refs/heads/master/install.sh | sh
+```
+
+## Как собрать
 
 В системе должны быть установлены `cargo`, `nasm`.
 
@@ -56,14 +64,7 @@ X != 0 => X = 1
 ```bash
 git clone https://github.com/vzalygin/plc
 cd plc
-cargo build --release --manifest-path ./compiler/Cargo.toml
-sudo cp ./compiler/target/release/plc /usr/bin
-```
-
-Для информации об интерфейсе:
-
-```bash
-plc -h
+cargo build
 ```
 
 ## Примеры

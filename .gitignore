@@ -1,3 +1,6 @@
+debug/
+target/
+
 output
 *.o
 *.e

@@ -3,7 +3,8 @@
 resolver = "2"
 members = [
     "lib",
-    "app"
+    "app",
+    "e2e"
 ]
 
 [profile.release] # https://github.com/johnthagen/min-sized-rust

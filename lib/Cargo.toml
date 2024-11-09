@@ -10,6 +10,6 @@ description = "plc project library"
 [dependencies]
 anyhow = "1.0"
 nom = "7.1"
-thiserror = "1.0"
+thiserror = "2.0.1"
 x64asm = "0.2.0"
 uuid = { version = "1.10.0", features = [ "v4", "fast-rng" ] }

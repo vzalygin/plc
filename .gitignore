@@ -1,6 +1,5 @@
 debug/
 target/
-tmp/
 
 output
 *.o

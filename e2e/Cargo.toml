@@ -1,9 +1,16 @@
 [package]
 name = "e2e"
-version = "0.1.0"
+version = "1.0.1"
 edition = "2021"
+authors = [
+    "Vyacheslav Zalygin @vzalygin"
+]
+description = "end-to-end tests for plc"
 
 [dependencies]
 anyhow = "1.0"
 lazy_static = "1.5.0"
 uuid = { version = "1.10.0", features = [ "v4", "fast-rng" ] }
+is_executable = "1.0.4"
+elf = "0.7.4"
+parameterized = "2.0.0"

@@ -7,8 +7,6 @@ use std::{
     process::{Command, ExitStatus, Output, Stdio},
 };
 
-const TMP_SUBDIR: &str = "plc_e2e";
-
 pub struct CompilationResult {
     pub compilation_output: Output,
     pub output_file: Option<PathBuf>,
@@ -36,11 +34,15 @@ impl CompilationResult {
 #[derive(Clone, Debug)]
 pub struct Compiler {
     executable: PathBuf,
+    tmp_path: PathBuf,
 }
 
 impl Compiler {
-    pub fn new(executable: PathBuf) -> Compiler {
-        Compiler { executable }
+    pub fn new(executable: PathBuf, tmp_path: PathBuf) -> Compiler {
+        Compiler {
+            executable,
+            tmp_path,
+        }
     }
 
     pub fn make() -> Result<Compiler> {
@@ -50,27 +52,24 @@ impl Compiler {
             .stderr(Stdio::null())
             .output()?;
 
-        let pwd = Command::new("pwd").output()?;
-
         if !build.status.success() {
             return Err(anyhow!(
-                "Build returned non-zero exit code: {}",
-                map_err_status(build.status)
+                "Build returned non-zero exit code: {}\nstdout: {:?}\nstderr: {:?}",
+                map_err_status(build.status),
+                build.stdout,
+                build.stderr
             ));
         }
 
-        if !pwd.status.success() {
-            return Err(anyhow!(
-                "Pwd command returned non-zero exit code: {}",
-                map_err_status(pwd.status)
-            ));
-        }
+        let mut pwd = env::current_dir()?;
+        let mut tmp = pwd.clone();
+        pwd.push("../target/debug/plc");
+        tmp.push("tmp");
+        let compiler = Compiler::new(pwd, tmp);
 
-        check_tmp_dir()?;
+        compiler.check_tmp_dir()?;
 
-        let executable_path = String::from_utf8(pwd.stdout.split_last().unwrap().1.to_vec())?
-            + "/../target/debug/plc";
-        Ok(Compiler::new(PathBuf::from(executable_path)))
+        Ok(compiler)
     }
 
     pub fn run_command<A, S>(&self, args: A) -> Result<String>
@@ -86,8 +85,8 @@ impl Compiler {
     }
 
     pub fn compile_with_args(&self, input: &str, args: &[&str]) -> Result<CompilationResult> {
-        let input_path = make_tmp_path();
-        let output_path = make_tmp_path();
+        let input_path = self.make_tmp_path();
+        let output_path = self.make_tmp_path();
 
         std::fs::write(&input_path, input)?;
 
@@ -115,6 +114,16 @@ impl Compiler {
 
         Ok(CompilationResult::new(compilation_output, output_file_path))
     }
+
+    fn make_tmp_path(&self) -> PathBuf {
+        env::temp_dir()
+            .join(&self.tmp_path)
+            .join(uuid::Uuid::new_v4().to_string())
+    }
+
+    fn check_tmp_dir(&self) -> Result<()> {
+        std::fs::create_dir_all(env::temp_dir().join(&self.tmp_path)).map_err(|e| e.into())
+    }
 }
 
 fn map_err_status(status: ExitStatus) -> String {
@@ -122,16 +131,6 @@ fn map_err_status(status: ExitStatus) -> String {
         .code()
         .map(|x| x.to_string())
         .unwrap_or("no-code".to_string())
-}
-
-fn make_tmp_path() -> PathBuf {
-    env::temp_dir()
-        .join(TMP_SUBDIR)
-        .join(uuid::Uuid::new_v4().to_string())
-}
-
-fn check_tmp_dir() -> Result<()> {
-    std::fs::create_dir_all(env::temp_dir().join(TMP_SUBDIR)).map_err(|e| e.into())
 }
 
 fn run_command(prepared_command: &mut Command) -> Result<String> {

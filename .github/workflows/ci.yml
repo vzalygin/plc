@@ -33,4 +33,7 @@ jobs:
       run: cargo clippy
 
     - name: Unit tests
-      run: cargo test --verbose
+      run: cargo test --verbose --all-targets --workspace --exclude e2e
+
+    - name: E2E tests
+      run: cargo test --verbose --all-targets --package e2e

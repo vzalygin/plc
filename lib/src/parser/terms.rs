@@ -51,6 +51,7 @@ fn term<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
         greater,
         apply,
         _if,
+        scan,
     ))
     .parse(inp)
 }
@@ -248,4 +249,10 @@ fn put<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
         identifier: x.to_string(),
     })
     .parse(inp)
+}
+
+fn scan<'s, E: ParseError<&'s str> + ContextError<&'s str>>(
+    inp: &'s str,
+) -> IResult<&'s str, Term, E> {
+    value(Term::Scan, tag("&")).parse(inp)
 }

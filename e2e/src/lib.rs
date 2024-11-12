@@ -24,6 +24,11 @@ mod tests {
     }
 
     #[test]
+    fn scan_operator() -> Result<()> {
+        compile_run_assert_with_stdin("& .", "1\n", "1\n")
+    }
+
+    #[test]
     fn ignore_comments() -> Result<()> {
         compile_run_assert("1 2 # 5 * \n+ .", "3\n")
     }
@@ -219,11 +224,14 @@ mod tests {
 
         std::fs::write(&input_path, "")?;
 
-        compiler.run_command([
-            flag,
-            osstr_to_str(output_path.as_os_str())?,
-            osstr_to_str(input_path.as_os_str())?,
-        ])?;
+        compiler.run_command(
+            [
+                flag,
+                osstr_to_str(output_path.as_os_str())?,
+                osstr_to_str(input_path.as_os_str())?,
+            ],
+            "",
+        )?;
 
         assert!(output_path.exists(), "output file exists");
         assert!(output_path.is_executable(), "output file is executable");
@@ -244,22 +252,28 @@ mod tests {
 
         std::fs::write(&input_path, "")?;
 
-        compiler.run_command([
-            flag,
-            "--output",
-            osstr_to_str(output_path_compiler.as_os_str())?,
-            osstr_to_str(input_path.as_os_str())?,
-        ])?;
+        compiler.run_command(
+            [
+                flag,
+                "--output",
+                osstr_to_str(output_path_compiler.as_os_str())?,
+                osstr_to_str(input_path.as_os_str())?,
+            ],
+            "",
+        )?;
 
         assert!(output_path_compiler.exists(), "output file exists");
 
-        let _ = run_command(Command::new("nasm").args([
-            "-f",
-            "elf64",
-            "-o",
-            osstr_to_str(output_path_nasm.as_os_str())?,
-            osstr_to_str(output_path_compiler.as_os_str())?,
-        ]))?;
+        let _ = run_command(
+            Command::new("nasm").args([
+                "-f",
+                "elf64",
+                "-o",
+                osstr_to_str(output_path_nasm.as_os_str())?,
+                osstr_to_str(output_path_compiler.as_os_str())?,
+            ]),
+            "",
+        )?;
 
         std::fs::remove_file(&input_path)?;
         std::fs::remove_file(&output_path_compiler)?;
@@ -277,12 +291,15 @@ mod tests {
 
         std::fs::write(&input_path, "")?;
 
-        compiler.run_command([
-            flag,
-            "--output",
-            osstr_to_str(output_path.as_os_str())?,
-            osstr_to_str(input_path.as_os_str())?,
-        ])?;
+        compiler.run_command(
+            [
+                flag,
+                "--output",
+                osstr_to_str(output_path.as_os_str())?,
+                osstr_to_str(input_path.as_os_str())?,
+            ],
+            "",
+        )?;
 
         assert!(output_path.exists(), "output file exists");
 
@@ -294,8 +311,18 @@ mod tests {
         Ok(())
     }
 
-    fn compile_run_assert(input: &str, expected_output: &str) -> Result<()> {
-        let actual_output = &compiler.compile(input)?.and_execute_once()?;
+    fn compile_run_assert(program: &str, expected_output: &str) -> Result<()> {
+        let actual_output = &compiler.compile(program)?.and_execute_once("")?;
+        assert_eq!(expected_output, actual_output);
+        Ok(())
+    }
+
+    fn compile_run_assert_with_stdin(
+        program: &str,
+        expected_output: &str,
+        stdin: &str,
+    ) -> Result<()> {
+        let actual_output = &compiler.compile(program)?.and_execute_once(stdin)?;
         assert_eq!(expected_output, actual_output);
         Ok(())
     }
@@ -305,7 +332,7 @@ mod tests {
         expected_output: &str,
         description: &str,
     ) -> Result<()> {
-        let actual_output = &compiler.compile(input)?.and_execute_once()?;
+        let actual_output = &compiler.compile(input)?.and_execute_once("")?;
         assert_eq!(expected_output, actual_output, "{}", description);
         Ok(())
     }
@@ -318,7 +345,7 @@ mod tests {
     }
 
     fn run_assert(args: &[&str], expected_output: &str) -> Result<()> {
-        let actual_output = compiler.run_command(args)?;
+        let actual_output = compiler.run_command(args, "")?;
         assert_eq!(actual_output, expected_output);
         Ok(())
     }

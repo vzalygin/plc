@@ -523,7 +523,7 @@ mod tests {
     fn scan() {
         let source = "&";
         let exp = Ast {
-            terms: vec![Term::Scan]
+            terms: vec![Term::Scan],
         };
         let act = parse(source);
         assert!(act.is_ok());

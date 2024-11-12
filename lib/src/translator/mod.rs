@@ -11,7 +11,7 @@ pub use {
 
 use crate::common::{Ast, Term};
 use consts::*;
-use stdlib::STD_EXIT_FN_LABEL;
+use stdlib::{STD_EXIT_FN_LABEL, STD_SCAN_FN_LABEL};
 use x64asm::{indirect_register, macros::*};
 
 pub fn translate(ast: &Ast) -> Asm {
@@ -38,6 +38,7 @@ fn prelude() -> Asm {
     ];
     let text = vec![
         i!(Extern, oplabel!(STD_PRINT_FN_LABEL.to_string())),
+        i!(Extern, oplabel!(STD_SCAN_FN_LABEL.to_string())),
         i!(Extern, oplabel!(STD_EXIT_FN_LABEL.to_string())),
         i!(section!(Text)),
         i!(Global, oplabel!(START_LABEL)),
@@ -260,5 +261,6 @@ fn translate_term(term: &Term, label_generator: &mut LabelGenerator) -> Asm {
             i!(Sub, reg!(Ebx), Op::Literal(OP_SIZE_BYTES)),
             i!(Mov, indirect_register!(Ebx), reg!(Rax)),
         ]),
+        Term::Scan => Asm::empty().text([i!(Call, oplabel!(STD_SCAN_FN_LABEL))]),
     }
 }

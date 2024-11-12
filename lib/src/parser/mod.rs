@@ -518,4 +518,16 @@ mod tests {
         let act = act.unwrap();
         assert_eq!(exp, act);
     }
+
+    #[test]
+    fn scan() {
+        let source = "&";
+        let exp = Ast {
+            terms: vec![Term::Scan]
+        };
+        let act = parse(source);
+        assert!(act.is_ok());
+        let act = act.unwrap();
+        assert_eq!(exp, act);
+    }
 }

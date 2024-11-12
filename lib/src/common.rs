@@ -9,6 +9,7 @@ pub enum Term {
     Div,
 
     Print,
+    Scan,
 
     Dup,
     Drop,

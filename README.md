@@ -69,5 +69,4 @@ cargo build
 
 ## Примеры
 
-Доступны в папке [examples](./examples)
-Также в папке [e2e](https://github.com/vzalygin/plc/blob/master/e2e/src/lib.rs) можно посмотреть сквозные тесты, описывающие поведение компилятора, находятся они .
+Доступны в папке [examples](./examples). Также в папке [e2e](https://github.com/vzalygin/plc/blob/master/e2e/src/lib.rs) можно посмотреть сквозные тесты, описывающие поведение компилятора.

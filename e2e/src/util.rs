@@ -3,6 +3,7 @@ use core::str;
 use std::{
     env,
     ffi::OsStr,
+    io::Write,
     path::PathBuf,
     process::{Command, ExitStatus, Output, Stdio},
 };
@@ -21,11 +22,14 @@ impl CompilationResult {
         }
     }
 
-    pub fn and_execute_once(self) -> Result<String> {
+    pub fn and_execute_once(self, stdin: &str) -> Result<String> {
         if let Some(file) = &self.output_file {
-            let result = run_command(&mut Command::new(file));
+            let result = run_command(&mut Command::new(file), stdin);
             let _ = std::fs::remove_file(file);
-            result
+            match result {
+                Ok(result) => Ok(result),
+                Err(e) => Err(anyhow!("Execution error: {}", e)),
+            }
         } else {
             Err(anyhow!("no output file"))
         }
@@ -69,12 +73,12 @@ impl Compiler {
         Ok(compiler)
     }
 
-    pub fn run_command<A, S>(&self, args: A) -> Result<String>
+    pub fn run_command<A, S>(&self, args: A, stdin: &str) -> Result<String>
     where
         A: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
-        run_command(Command::new(self.executable.as_path()).args(args))
+        run_command(Command::new(self.executable.as_path()).args(args), stdin)
     }
 
     pub fn compile(&self, input: &str) -> Result<CompilationResult> {
@@ -123,8 +127,15 @@ impl Compiler {
     }
 }
 
-pub fn run_command(prepared_command: &mut Command) -> Result<String> {
-    let output = prepared_command.output()?;
+pub fn run_command(prepared_command: &mut Command, stdin: &str) -> Result<String> {
+    let child = prepared_command
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()?;
+
+    child.stdin.as_ref().unwrap().write_all(stdin.as_bytes())?;
+
+    let output = child.wait_with_output()?;
 
     if output.status.success() {
         Ok(String::from_utf8(output.stdout)?)

@@ -1,4 +1,4 @@
-1 # push a number to stack
-2 # push another number to stack
+1 # store a number to a stack
+& # store stdin number in a stack
 + # add the numbers
 . # print result

@@ -1,15 +1,16 @@
 [package]
-name = "lib"
-version = "1.0.0"
+name = "e2e"
+version = "1.0.1"
 edition = "2021"
 authors = [
     "Vyacheslav Zalygin @vzalygin"
 ]
-description = "plc project library"
+description = "end-to-end tests for plc"
 
 [dependencies]
 anyhow = "1.0"
-nom = "7.1"
-thiserror = "2.0.1"
-x64asm = "0.2.0"
+lazy_static = "1.5.0"
 uuid = { version = "1.10.0", features = [ "v4", "fast-rng" ] }
+is_executable = "1.0.4"
+elf = "0.7.4"
+parameterized = "2.0.0"
